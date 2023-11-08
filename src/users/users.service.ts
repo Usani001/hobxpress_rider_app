@@ -1,75 +1,67 @@
 import { Injectable, Logger } from '@nestjs/common';
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { Repository } from 'typeorm';
-
-// var jwt = require('jsonwebtoken');
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './entity/user.entity';
+import { AuthService } from 'src/auth/auth.service';
+import { CreateUserDto } from './dto/create-user.dto';
+var jwt = require('jsonwebtoken');
 
 @Injectable()
 export class UsersService {
-  //   constructor(
-  //     @InjectRepository(User)
-  //     private readonly userConnection: Repository<User>,
-  //     private authService: AuthService
-  //   ) {}
-  //   async create(createUserDto: CreateUserDto) {
-  //     const OTP = this.authService.generateOtp();
+  constructor(
+    @InjectRepository(User)
+    private readonly userConnection: Repository<User>,
+    private authService: AuthService
+  ) {}
+
+  async create(createUserDto: CreateUserDto) {
+    try {
+      const user = await this.userConnection.findOneBy({
+        email: createUserDto.email,
+      });
+      if (user) {
+        createUserDto.password = await this.authService.encrypt(
+          createUserDto.password
+        );
+        let newData = await this.userConnection.save(createUserDto);
+        console.log(createUserDto);
+
+        return {
+          status: true,
+          message: 'user Created successfully',
+        };
+      } else {
+        return {
+          status: false,
+          data: 'Create a user first',
+        };
+      }
+    } catch (error) {
+      console.log(error);
+      return {
+        data: error,
+        status: false,
+        message: 'error in creating data',
+      };
+    }
+  }
+  //   async login(body) {
   //     try {
-  //       const user = await this.userConnection.findOneBy({
-  //         email: createUserDto.email,
-  //       });
-  //       if (user) {
-  //         return {
-  //           status: false,
-  //           message: 'user exists',
-  //         };
-  //       }
-  //       createUserDto.password = await this.authService.encrypt(
-  //         createUserDto.password
-  //       );
-  //       let newData = await this.userConnection.save(createUserDto);
-  //       console.log(createUserDto, 'test user');
-  //       return {
-  //         status: true,
-  //         data: newData,
-  //         message: 'user Created successfully',
-  //       };
-  //     } catch (error) {
-  //       console.log(error);
-  //       return {
-  //         data: error,
-  //         status: false,
-  //         message: 'error in creating data',
-  //       };
-  //     }
-  //   }
-  //   async login({
-  //     emailOrPhone,
-  //     password,
-  //   }: {
-  //     emailOrPhone: string;
-  //     password: string;
-  //   }) {
-  //     try {
-  //       let data: FetchUserDto = await this.userConnection.findOne({
-  //         where: [{ email: emailOrPhone }, { phone_number: emailOrPhone }],
+  //       let data:User = await this.userConnection.findOne({
+  //         where: { email: body.email },
   //       });
   //       const passwordIsMatch = await bcrypt.compare(
-  //         password,
+  //         body.password,
   //         data?.password || ''
   //       );
-  //       if (data.active === false) {
-  //         return {
-  //           status: false,
-  //           message: 'User account is not active',
-  //         };
-  //       }
   //       if (data && passwordIsMatch) {
+  //         const { password, ref_by, referrals, ...Filterdata } = data;
   //         var token = jwt.sign(
   //           {
-  //             id: data.id,
+  // data
+
   //             email: data.email,
-  //             user_type: AdminType.USER,
-  //             users_id: data.users_id,
+  //             id: data.id,
   //             first_name: data.first_name,
   //             last_name: data.last_name,
   //           },
@@ -77,7 +69,6 @@ export class UsersService {
   //           { expiresIn: '24h' }
   //         );
   //         //filterout password,
-  //         const { password, ref_by, referrals, ...Filterdata } = data;
   //         return {
   //           status: true,
   //           token: token,

@@ -12,25 +12,23 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
 
-// export class userLogoutFilterOptions {
-//   emailOrPhone: string;
-// }
+export class userLogin {
+  email: string;
+}
 
 @Controller('users')
 export class UsersController {
-  //   constructor(private readonly usersService: UsersService) {}
-  //   @Post()
-  //   create(
-  //     @Body() createUserDto
-  //     // : CreateUserDto
-  //   ) {
-  //     return this.usersService.create(createUserDto);
-  //   }
+  constructor(private readonly usersService: UsersService) {}
+  @Post()
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
   //   @Post('login')
   //   async login(
   //     @Body() data
-  //     // : userLoginFilterOptions
+  //     // : userLogin
   //   ) {
   //     return this.usersService.login(data);
   //   }
