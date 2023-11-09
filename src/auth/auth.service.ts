@@ -41,6 +41,7 @@ export class AuthService {
         // Send OTP to the user (e.g., via email or SMS)
         console.log(last);
 
+        //send otp email
         return {
           status: true,
           message: 'OTP sent',

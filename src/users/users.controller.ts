@@ -16,24 +16,46 @@ import { CreateUserDto } from './dto/create-user.dto';
 
 export class userLogin {
   email: string;
+  password: string;
+}
+export class refCode {
+  referal_code: string;
+}
+
+export class updateDto {
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  password?: string;
 }
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  create(@Body() createUserDto: CreateUserDto, @Query() query: refCode) {
+    return this.usersService.create(createUserDto, query);
   }
-  //   @Post('login')
-  //   async login(
-  //     @Body() data
-  //     // : userLogin
-  //   ) {
-  //     return this.usersService.login(data);
-  //   }
-  //   @Delete(':id')
-  //   remove(@Param('id') id: string) {
-  //     return this.usersService.remove(+id);
-  //   }
+
+  @Post('login')
+  async login(@Body() body: userLogin) {
+    return this.usersService.login(body);
+  }
+
+  @Patch('forgotpassword')
+  async reset(@Body() body: updateDto) {
+    return this.usersService.resetPassword(body);
+  }
+
+  //auth guard
+  @Patch('profile')
+  async update(@Body() body: updateDto, @Req() req) {
+    return this.usersService.update(body, req);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string, @Req() req) {
+    return this.usersService.remove(id, req);
+  }
 }
