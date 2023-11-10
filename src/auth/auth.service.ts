@@ -41,6 +41,7 @@ export class AuthService {
         // Send OTP to the user (e.g., via email or SMS)
         console.log(last);
 
+        //send otp email
         return {
           status: true,
           message: 'OTP sent',
@@ -150,9 +151,9 @@ export class AuthService {
       7,
       request.headers.authorization.length
     );
-    console.log({
-      data: token,
-    });
+    // console.log({
+    //   data: token,
+    // });
     return token;
   }
 

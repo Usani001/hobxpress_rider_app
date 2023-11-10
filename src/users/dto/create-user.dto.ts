@@ -7,6 +7,7 @@ export class CreateUserDto extends OmitType(User, [
   'ref_by',
   'id',
   'otp_token',
+  'deletedAt',
 ] as const) {}
 
 export class CreateUserResponseDto {
