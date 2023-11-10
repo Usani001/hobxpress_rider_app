@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, Generated } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  Generated,
+  DeleteDateColumn,
+} from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 const generatedUuid = uuidv4();
@@ -34,4 +40,7 @@ export class User {
 
   @Column({ type: 'text', array: true, default: [] })
   notifications: string[];
+
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date;
 }

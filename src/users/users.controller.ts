@@ -33,6 +33,11 @@ export class updateDto {
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get()
+  getOrder(@Req() req) {
+    return this.usersService.findUser(req);
+  }
+
   @Post()
   create(@Body() createUserDto: CreateUserDto, @Query() query: refCode) {
     return this.usersService.create(createUserDto, query);

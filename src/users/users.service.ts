@@ -53,7 +53,6 @@ export class UsersService {
           };
         }
       } catch (error) {
-        console.log(error);
         return {
           data: error,
           status: false,
@@ -89,13 +88,27 @@ export class UsersService {
           };
         }
       } catch (error) {
-        console.log(error);
         return {
           data: error,
           status: false,
           message: 'error in creating data',
         };
       }
+    }
+  }
+
+  async findUser(req) {
+    try {
+      const tokUser = await this.authService.getLoggedInUser(req);
+      const getUser = await this.userConnection.findOne({
+        where: { id: tokUser.data.id },
+      });
+      if (!getUser || getUser.deletedAt) {
+        return { status: false, message: 'User not found' };
+      }
+      return { status: true, message: 'user found', data: getUser };
+    } catch (error) {
+      return { status: true, message: 'error', data: error };
     }
   }
 
@@ -203,7 +216,7 @@ export class UsersService {
     try {
       if (req) {
         const tokUser = await this.authService.getLoggedInUser(req);
-        await this.userConnection.softDelete(tokUser.id);
+        await this.userConnection.softDelete(tokUser.data.id);
         return {
           status: true,
           message: 'deleted successfully',

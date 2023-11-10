@@ -151,9 +151,9 @@ export class AuthService {
       7,
       request.headers.authorization.length
     );
-    console.log({
-      data: token,
-    });
+    // console.log({
+    //   data: token,
+    // });
     return token;
   }
 
