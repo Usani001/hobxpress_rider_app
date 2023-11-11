@@ -11,6 +11,9 @@ export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: number;
 
+  @Column()
+  user_id: string
+
   @Column({ default: '' })
   pickup_add: string;
 

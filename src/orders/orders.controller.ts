@@ -19,12 +19,12 @@ export class OrdersController {
   constructor(private readonly orderService: OrdersService) {}
 
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  create(@Body() body: CreateOrderDto, @Req() req) {
+    return this.orderService.create(body, req);
   }
 
   @Get()
-  getOrder(@Body() body) {
-    return this.orderService.findOrder(body);
+  getOrder(@Body() body, @Req() req) {
+    return this.orderService.findOrder(body, req);
   }
 }
