@@ -44,8 +44,8 @@ export class AuthService {
         //send otp email
         return {
           status: true,
-          message: 'OTP sent',
-          data: newUser.otp_token
+          message: 'OTP sent: ' + newUser.otp_token,
+
 
         };
       } else {
@@ -72,8 +72,8 @@ export class AuthService {
 
       return {
         status: true,
-        message: 'OTP sent',
-        data: user.otp_token
+        message: 'OTP sent: ' + user.otp_token,
+
       };
     } catch (error) {
       return {
