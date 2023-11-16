@@ -13,7 +13,7 @@ export class AuthService {
     private readonly entityManager: EntityManager,
     @InjectRepository(User)
     private readonly userConnection: Repository<User>
-  ) {}
+  ) { }
 
   saltOrRounds = Number(process.env.HASH_SALT);
 
@@ -45,6 +45,8 @@ export class AuthService {
         return {
           status: true,
           message: 'OTP sent',
+          data: newUser.otp_token
+
         };
       } else {
         return {
@@ -71,6 +73,7 @@ export class AuthService {
       return {
         status: true,
         message: 'OTP sent',
+        data: user.otp_token
       };
     } catch (error) {
       return {
