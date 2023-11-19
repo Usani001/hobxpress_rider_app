@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { sharedModules } from 'sharedModules';
 import { sharedEntities } from 'entitiesData';
+import { RiderModule } from './rider/rider.module';
+import { RiderControllerController } from './rider.controller/rider.controller.controller';
 
 @Module({
   imports: [
@@ -23,8 +25,9 @@ import { sharedEntities } from 'entitiesData';
       entities: [...sharedEntities],
       synchronize: true,
     }),
+    RiderModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, RiderControllerController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {

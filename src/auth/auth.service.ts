@@ -54,7 +54,8 @@ export class AuthService {
           message: 'User already exists',
         };
       }
-    } catch (error) {
+    }
+    catch (error) {
       return {
         status: false,
         data: error,
