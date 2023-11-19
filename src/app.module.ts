@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { sharedModules } from 'sharedModules';
 import { sharedEntities } from 'entitiesData';
+import { RiderModule } from './rider/rider.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { sharedEntities } from 'entitiesData';
       entities: [...sharedEntities],
       synchronize: true,
     }),
+    RiderModule,
   ],
   controllers: [AppController],
   providers: [AppService],
