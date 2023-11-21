@@ -31,7 +31,7 @@ export class updateDto {
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get()
   getOrder(@Req() req) {

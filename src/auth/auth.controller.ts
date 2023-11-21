@@ -10,7 +10,7 @@ export class autheObj {
 }
 @Controller('Auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Get('verifyOtp')
   verify(@Body() data: autheoObj) {
