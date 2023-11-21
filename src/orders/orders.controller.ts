@@ -16,7 +16,6 @@ import { CreateOrderDto } from './dto/createOrder.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('order')
-@UseGuards(AuthGuard)
 export class OrdersController {
   constructor(private readonly orderService: OrdersService) { }
 
