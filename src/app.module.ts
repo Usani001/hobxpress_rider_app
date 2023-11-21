@@ -6,10 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { sharedModules } from 'sharedModules';
 import { sharedEntities } from 'entitiesData';
 import { RiderModule } from './rider/rider.module';
-<<<<<<< HEAD
-import { RiderControllerController } from './rider.controller/rider.controller.controller';
-=======
->>>>>>> Dev-Branch
+
 
 @Module({
   imports: [
@@ -30,9 +27,9 @@ import { RiderControllerController } from './rider.controller/rider.controller.c
     }),
     RiderModule,
   ],
-  controllers: [AppController, RiderControllerController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {}
+  configure(consumer: MiddlewareConsumer) { }
 }
