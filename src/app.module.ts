@@ -6,7 +6,10 @@ import { ConfigModule } from '@nestjs/config';
 import { sharedModules } from 'sharedModules';
 import { sharedEntities } from 'entitiesData';
 import { RiderModule } from './rider/rider.module';
+<<<<<<< HEAD
 import { RiderControllerController } from './rider.controller/rider.controller.controller';
+=======
+>>>>>>> Dev-Branch
 
 @Module({
   imports: [
