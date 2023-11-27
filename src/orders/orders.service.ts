@@ -11,7 +11,7 @@ export class OrdersService {
     @InjectRepository(Order)
     private readonly orderConnection: Repository<Order>,
     private authService: AuthService
-  ) {}
+  ) { }
 
   async create(body: CreateOrderDto, req) {
     try {

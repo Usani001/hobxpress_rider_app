@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, Generated } from 'typeorm';
+import { Rider } from 'src/rider/entity/rider.entity';
+import { Entity, Column, PrimaryGeneratedColumn, Generated, ManyToOne } from 'typeorm';
 
 export enum orderType {
   ACTIVE = 'ACTIVE',
@@ -55,4 +56,8 @@ export class Order {
 
   @Column({ default: orderType.ACTIVE })
   type: orderType;
+
+
+  @ManyToOne(() => Rider, rider => rider.order)
+  rider: Rider
 }
