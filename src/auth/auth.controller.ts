@@ -21,4 +21,14 @@ export class AuthController {
   sendOTP(@Body() data: autheObj) {
     return this.authService.sendOTP(data);
   }
+
+  @Get('sendRiderOtp')
+  sendRiderOTP(@Body() data: autheObj) {
+    return this.authService.sendRiderOTP(data);
+  }
+
+  @Get('verifyRiderOtp')
+  verifyRider(@Body() data: autheoObj) {
+    return this.authService.verifyRiderOTP(data);
+  }
 }

@@ -5,7 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { sharedModules } from 'sharedModules';
 import { sharedEntities } from 'entitiesData';
-import { RiderModule } from './rider/rider.module';
+
+
 
 
 @Module({
@@ -25,11 +26,12 @@ import { RiderModule } from './rider/rider.module';
       entities: [...sharedEntities],
       synchronize: true,
     }),
-    RiderModule,
+
   ],
   controllers: [AppController],
   providers: [AppService],
 })
+
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) { }
 }

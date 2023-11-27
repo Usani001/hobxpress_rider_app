@@ -22,11 +22,13 @@ export class RiderController {
 
     constructor(private readonly riderService: RiderService) { }
 
-    createRider(@Body() createRiderDto: RiderDto, @Query() query: refCode) {
+
+    @Post('create-rider')
+    async createRider(@Body() createRiderDto: RiderDto, @Query() query: refCode) {
         return this.riderService.createRider(createRiderDto, query);
     }
 
-    @Post('login')
+    @Post('login-rider')
     async login(@Body() request: riderLogin) {
         return this.riderService.loginRider(request);
     }

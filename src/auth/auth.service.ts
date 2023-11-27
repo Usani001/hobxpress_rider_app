@@ -5,6 +5,7 @@ import * as speakeasy from 'speakeasy';
 import { User } from 'src/users/entity/user.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { autheoObj } from './auth.controller';
+import { Rider } from 'src/rider/entity/rider.entity';
 var jwt = require('jsonwebtoken');
 
 @Injectable()
@@ -12,7 +13,9 @@ export class AuthService {
   constructor(
     private readonly entityManager: EntityManager,
     @InjectRepository(User)
-    private readonly userConnection: Repository<User>
+    private readonly userConnection: Repository<User>,
+    @InjectRepository(Rider)
+    private readonly riderConnection: Repository<Rider>
   ) { }
 
   saltOrRounds = Number(process.env.HASH_SALT);
@@ -62,6 +65,50 @@ export class AuthService {
       };
     }
   }
+
+
+  async sendRiderOTP(data) {
+    try {
+      const rider = await this.riderConnection.findOneBy({ email: data.email });
+
+      if (!rider) {
+        // Generate OTP
+        const OTP = this.generateOtp2(process.env.OTP_SECRETS, data.email);
+
+        const newRider = await this.userConnection.create();
+        // Store OTP in the user's data or a temporary storage (e.g., a cache or session)
+        newRider.otp_token = OTP;
+        newRider.email = data.email;
+
+        // Save the user data with the OTP to your database
+        let last = await this.riderConnection.save(newRider);
+
+        // Send OTP to the user (e.g., via email or SMS)
+        console.log(last);
+
+        //send otp email
+        return {
+          status: true,
+          message: 'OTP sent: ' + newRider.otp_token,
+
+
+        };
+      } else {
+        return {
+          status: false,
+          message: 'Rider already exists',
+        };
+      }
+    }
+    catch (error) {
+      return {
+        status: false,
+        data: error,
+      };
+    }
+  }
+
+
   async resendOTP(data) {
     try {
       const user = await this.userConnection.findOneBy({ email: data.email });
@@ -84,12 +131,38 @@ export class AuthService {
     }
   }
 
+
+
   async verifyOTP(data: autheoObj) {
     try {
       const user = await this.userConnection.findOne({
         where: { email: data.email },
       });
       if (user && user.otp_token === data.otp) {
+        return {
+          status: true,
+          message: 'OTP is valid',
+        };
+      } else {
+        return {
+          status: false,
+          message: 'Invalid OTP',
+        };
+      }
+    } catch (error) {
+      return {
+        status: false,
+        data: error,
+      };
+    }
+  }
+
+  async verifyRiderOTP(data: autheoObj) {
+    try {
+      const rider = await this.riderConnection.findOne({
+        where: { email: data.email },
+      });
+      if (rider && rider.otp_token === data.otp) {
         return {
           status: true,
           message: 'OTP is valid',

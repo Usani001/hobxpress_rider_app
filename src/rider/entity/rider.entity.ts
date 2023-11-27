@@ -48,7 +48,6 @@ export class Rider {
     deletedAt: Date;
 
 
-
     @OneToMany(() => Order, order => order.rider)
     order: Order[];
 
