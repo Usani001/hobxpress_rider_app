@@ -10,7 +10,10 @@ export class RiderDto extends OmitType(Rider, [
     'id',
     'otp_token',
     'deletedAt',
-] as const) { }
+] as const) {
+
+
+}
 
 
 export class CreateUserResponseDto {
