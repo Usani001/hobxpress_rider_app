@@ -237,8 +237,8 @@ export class AuthService {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'hobxpress@gmail.com',
-        pass: 'rfbfouksbfkcqtig', // naturally, replace both with your real credentials or an application-specific password.
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_KEY, // naturally, replace both with your real credentials or an application-specific password.
       },
     });
     const mailOptions = {
