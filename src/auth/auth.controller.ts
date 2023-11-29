@@ -27,11 +27,6 @@ export class AuthController {
     return this.authService.resendOTP(data);
   }
 
-  // @Get('testemail')
-  // tesOTP(@Body() data: autheObj) {
-  //   return this.authService.sendEmail(data, 123);
-  // }/
-
   @Get('sendRiderOtp')
   sendRiderOTP(@Body() data: autheObj) {
     return this.authService.sendRiderOTP(data);
