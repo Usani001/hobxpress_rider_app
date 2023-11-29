@@ -6,6 +6,7 @@ import { User } from 'src/users/entity/user.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { autheoObj } from './auth.controller';
 import { Rider } from 'src/rider/entity/rider.entity';
+const nodemailer = require('nodemailer');
 var jwt = require('jsonwebtoken');
 
 @Injectable()
@@ -15,8 +16,8 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userConnection: Repository<User>,
     @InjectRepository(Rider)
-    private readonly riderConnection: Repository<Rider>
-  ) { }
+    private readonly riderConnection: Repository<Rider>,
+  ) {}
 
   saltOrRounds = Number(process.env.HASH_SALT);
 
@@ -42,14 +43,13 @@ export class AuthService {
         let last = await this.userConnection.save(newUser);
 
         // Send OTP to the user (e.g., via email or SMS)
+        await this.sendEmail(data.email, OTP);
         console.log(last);
 
         //send otp email
         return {
           status: true,
           message: 'OTP sent: ' + newUser.otp_token,
-
-
         };
       } else {
         return {
@@ -57,15 +57,13 @@ export class AuthService {
           message: 'User already exists',
         };
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         status: false,
         data: error,
       };
     }
   }
-
 
   async sendRiderOTP(data) {
     try {
@@ -84,14 +82,13 @@ export class AuthService {
         let last = await this.riderConnection.save(newRider);
 
         // Send OTP to the user (e.g., via email or SMS)
+        await this.sendEmail(data.email, OTP);
         console.log(last);
 
         //send otp email
         return {
           status: true,
           message: 'OTP sent: ' + newRider.otp_token,
-
-
         };
       } else {
         return {
@@ -99,15 +96,13 @@ export class AuthService {
           message: 'Rider already exists',
         };
       }
-    }
-    catch (error) {
+    } catch (error) {
       return {
         status: false,
         data: error,
       };
     }
   }
-
 
   async resendOTP(data) {
     try {
@@ -117,11 +112,11 @@ export class AuthService {
 
       user.otp_token = OTP;
       await this.userConnection.save(user);
+      await this.sendEmail(data.email, OTP);
 
       return {
         status: true,
         message: 'OTP sent: ' + user.otp_token,
-
       };
     } catch (error) {
       return {
@@ -130,8 +125,6 @@ export class AuthService {
       };
     }
   }
-
-
 
   async verifyOTP(data: autheoObj) {
     try {
@@ -226,7 +219,7 @@ export class AuthService {
     console.log(request.headers.authorization);
     let token = request.headers.authorization.substring(
       7,
-      request.headers.authorization.length
+      request.headers.authorization.length,
     );
     // console.log({
     //   data: token,
@@ -238,5 +231,29 @@ export class AuthService {
     let token = await this.extractTokenFromHeader(request);
     const decoded = jwt.verify(token, process.env.DEFAULT_SECRET);
     return decoded;
+  }
+
+  async sendEmail(to, otp) {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'chiefspammer@yourgreatdomain.com',
+        pass: 'SuperSecretPassword', // naturally, replace both with your real credentials or an application-specific password.
+      },
+    });
+    const mailOptions = {
+      from: 'vindication@enron.com',
+      to: `${to}`,
+      subject: 'Invoices due',
+      text: `Your Passcode is: ${otp}`,
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('Email sent: ' + info.response);
+      }
+    });
   }
 }
