@@ -46,7 +46,7 @@ export class AuthService {
         await this.sendEmail(data.email, OTP);
         console.log(last);
 
-        //send otp email
+        //send otp email.
         return {
           status: true,
           message: 'OTP sent: ' + newUser.otp_token,

@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 export class userLogin {
   email: string;
@@ -63,6 +64,7 @@ export class UsersController {
   }
 
   //auth guard
+  @UseGuards(AuthGuard)
   @Patch('profile')
   async update(@Body() body: updateDto, @Req() req) {
     return this.usersService.update(req, body);

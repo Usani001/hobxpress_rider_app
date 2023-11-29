@@ -183,7 +183,7 @@ export class UsersService {
       // if (body.password) {
       //   const password = await this.authService.encrypt(body.password);
       //   getUser.password = password;
-      // }
+      // }/
       if (body.email) {
         getUser.email = body.email;
       }
