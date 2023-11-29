@@ -34,7 +34,6 @@ export class RiderService {
                     );
                     createRiderDto['ref_by'] = refcodeUser.email;
                     refcodeUser.referrals.push(createRiderDto.email);
-
                     rider.first_name = createRiderDto.first_name;
                     rider.last_name = createRiderDto.last_name;
                     rider.password = createRiderDto.password;
