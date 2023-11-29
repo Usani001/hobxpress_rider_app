@@ -18,6 +18,9 @@ export class RiderService {
         private readonly riderRepository: Repository<Rider>,
         private authService: AuthService
     ) { }
+
+
+    async createRef(createRiderDto, ref){}
     async createRider(createRiderDto: RiderDto, query) {
         if (query) {
             try {
