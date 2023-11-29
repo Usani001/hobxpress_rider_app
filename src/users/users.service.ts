@@ -14,7 +14,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userConnection: Repository<User>,
     private authService: AuthService,
-  ) {}
+  ) { }
 
   async createRef(createUserDto, ref) {
     try {
