@@ -244,7 +244,7 @@ export class AuthService {
     const mailOptions = {
       from: 'hobxpress@gmail.com',
       to: `${to}`,
-      subject: 'Invoices due',
+      subject: 'DO NOT DISCLOSE YOUR CODE',
       text: `Your Passcode is: ${otp}`,
     };
 
