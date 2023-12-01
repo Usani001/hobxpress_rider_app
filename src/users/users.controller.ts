@@ -58,9 +58,10 @@ export class UsersController {
     return this.usersService.resetPassword(body);
   }
 
+  @UseGuards(AuthGuard)
   @Patch('changepassword')
   async change(@Body() body: updateDto, @Req() req) {
-    return this.usersService.changePassword(body, req);
+    return this.usersService.changePassword(req, body);
   }
 
   //auth guard

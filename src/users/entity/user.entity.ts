@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   DeleteDateColumn,
   BeforeInsert,
+  CreateDateColumn,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -30,11 +31,17 @@ export class User {
   @Column({ default: '' })
   ref_by: string;
 
+  @Column({ nullable: true, unique: true })
+  phone_number: string;
+
   @Column({ type: 'text', array: true, default: [] })
   referrals: string[];
 
   @Column({ type: 'text', array: true, default: [] })
   notifications: string[];
+
+  @CreateDateColumn({ nullable: true })
+  createdAt: Date;
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;

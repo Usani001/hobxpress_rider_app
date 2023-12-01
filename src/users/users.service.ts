@@ -13,8 +13,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userConnection: Repository<User>,
-    private authService: AuthService,
-  ) { }
+    private authService: AuthService
+  ) {}
 
   async createRef(createUserDto, ref) {
     try {
@@ -27,7 +27,7 @@ export class UsersService {
       });
       if (user) {
         createUserDto.password = await this.authService.encrypt(
-          createUserDto.password,
+          createUserDto.password
         );
         createUserDto['ref_by'] = refcodeUser.email;
         refcodeUser.referrals.push(createUserDto.email);
@@ -67,7 +67,7 @@ export class UsersService {
       });
       if (user) {
         createUserDto.password = await this.authService.encrypt(
-          createUserDto.password,
+          createUserDto.password
         );
         // createUserDto = user
         user.first_name = createUserDto.first_name;
@@ -126,7 +126,7 @@ export class UsersService {
       }
       const passwordIsMatch = await bcrypt.compare(
         body.password,
-        data?.password || '',
+        data?.password || ''
       );
       if (data && passwordIsMatch) {
         const {
@@ -141,8 +141,8 @@ export class UsersService {
           {
             data: Filterdata,
           },
-          process.env.DEFAULT_SECRET,
-          // { expiresIn: '24h' },
+          process.env.DEFAULT_SECRET
+          // { expiresIn: '24h' }
         );
         //filterout password,
         return {
@@ -167,7 +167,7 @@ export class UsersService {
   }
 
   //update user email first lastname number and password
-  async update(body: updateDto, req) {
+  async update(req, body: updateDto) {
     try {
       const tokUser = await this.authService.getLoggedInUser(req);
       const getUser = await this.userConnection.findOne({
@@ -222,14 +222,16 @@ export class UsersService {
 
   async changePassword(req, body) {
     try {
+      console.log('object');
       const tokUser = await this.authService.getLoggedInUser(req);
+      console.log(tokUser);
       const getUser = await this.userConnection.findOne({
         where: { email: tokUser.data.email },
       });
       const password = await this.authService.encrypt(body.password);
       getUser.password = password;
       await this.userConnection.save(getUser);
-      return { status: true, message: 'New password sent' };
+      return { status: true, message: 'New password set' };
     } catch (error) {
       return { status: false, message: error };
     }

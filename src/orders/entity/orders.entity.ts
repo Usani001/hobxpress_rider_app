@@ -1,5 +1,13 @@
 import { Rider } from 'src/rider/entity/rider.entity';
-import { Entity, Column, PrimaryGeneratedColumn, Generated, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  Generated,
+  ManyToOne,
+  CreateDateColumn,
+  DeleteDateColumn,
+} from 'typeorm';
 
 export enum orderType {
   ACTIVE = 'ACTIVE',
@@ -13,7 +21,7 @@ export class Order {
   id: number;
 
   @Column()
-  user_id: string
+  user_id: string;
 
   @Column({ default: '' })
   pickup_add: string;
@@ -57,7 +65,12 @@ export class Order {
   @Column({ default: orderType.ACTIVE })
   type: orderType;
 
+  @CreateDateColumn({ nullable: true })
+  createdAt: Date;
 
-  @ManyToOne(() => Rider, rider => rider.order)
-  rider: Rider
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date;
+
+  @ManyToOne(() => Rider, (rider) => rider.order)
+  rider: Rider;
 }

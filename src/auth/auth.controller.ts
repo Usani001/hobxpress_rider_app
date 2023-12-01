@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { AuthGuard } from './auth.guard';
 
 export class autheoObj {
   email: string;
@@ -22,6 +23,7 @@ export class AuthController {
     return this.authService.sendOTP(data);
   }
 
+  @UseGuards(AuthGuard)
   @Get('resendOtp')
   resendOTP(@Body() data: autheObj) {
     return this.authService.resendOTP(data);
