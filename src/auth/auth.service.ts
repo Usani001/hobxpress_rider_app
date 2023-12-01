@@ -16,7 +16,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly userConnection: Repository<User>,
     @InjectRepository(Rider)
-    private readonly riderConnection: Repository<Rider>,
+    private readonly riderConnection: Repository<Rider>
   ) {}
 
   saltOrRounds = Number(process.env.HASH_SALT);
@@ -219,7 +219,7 @@ export class AuthService {
     console.log(request.headers.authorization);
     let token = request.headers.authorization.substring(
       7,
-      request.headers.authorization.length,
+      request.headers.authorization.length
     );
     // console.log({
     //   data: token,
@@ -244,7 +244,7 @@ export class AuthService {
     const mailOptions = {
       from: 'hobxpress@gmail.com',
       to: `${to}`,
-      subject: 'DO NOT DISCLOSE YOUR CODE',
+      subject: 'DO NOT DISCLOSE YOUR CODE.',
       text: `Your Passcode is: ${otp}`,
     };
 
