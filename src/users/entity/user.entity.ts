@@ -2,13 +2,11 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  Generated,
   DeleteDateColumn,
+  BeforeInsert,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-const generatedUuid = uuidv4();
-const code = generatedUuid.slice(0, 5);
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -29,9 +27,6 @@ export class User {
   @Column({ default: 0 })
   otp_token: number;
 
-  @Column({ default: '', unique: true })
-  ref_code: string = code;
-
   @Column({ default: '' })
   ref_by: string;
 
@@ -43,4 +38,13 @@ export class User {
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
+
+  @Column({ default: '' })
+  ref_code: string;
+
+  @BeforeInsert()
+  generateRefCode() {
+    // Generate a unique reference code using uuidv4
+    this.ref_code = uuidv4().slice(0, 5);
+  }
 }
