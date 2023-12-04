@@ -25,8 +25,18 @@ export class OrdersController {
     return this.orderService.create(body, req);
   }
 
+  @Get('all')
+  getOrders(@Body() body, @Req() req) {
+    return this.orderService.findOrders(body, req);
+  }
+
   @Get()
   getOrder(@Body() body, @Req() req) {
     return this.orderService.findOrder(body, req);
+  }
+
+  @Post('review')
+  rating(@Body() body, @Req() req) {
+    return this.orderService.rate(body, req);
   }
 }

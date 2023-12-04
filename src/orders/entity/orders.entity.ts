@@ -54,6 +54,12 @@ export class Order {
   itemSize: string;
 
   @Column({ default: '' })
+  comments?: string;
+
+  @Column({ default: 0 })
+  ratings?: number;
+
+  @Column({ default: '' })
   itemWeight: string;
 
   @Column({ default: '' })
