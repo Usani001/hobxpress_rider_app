@@ -23,7 +23,7 @@ export class AuthController {
     return this.authService.sendOTP(data);
   }
 
-  @UseGuards(AuthGuard)
+  // @UseGuards(AuthGuard)
   @Get('resendOtp')
   resendOTP(@Body() data: autheObj) {
     return this.authService.resendOTP(data);

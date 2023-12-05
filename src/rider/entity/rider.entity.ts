@@ -27,14 +27,14 @@ export class Rider {
   @Column({ default: 0 })
   otp_token: number;
 
-  @Column({ default: '', unique: true })
-  ref_code: string = code;
+  // @Column({ default: '', unique: true })
+  // ref_code: string = code;
 
-  @Column({ default: '' })
-  ref_by: string;
+  // @Column({ default: '' })
+  // ref_by: string;
 
-  @Column({ type: 'text', array: true, default: [] })
-  referrals: string[];
+  // @Column({ type: 'text', array: true, default: [] })
+  // referrals: string[];
 
   @Column({ type: 'text', array: true, default: [] })
   notifications: string[];

@@ -240,26 +240,12 @@ export class UsersService {
   async remove(req) {
     try {
       const tokUser = await this.authService.getLoggedInUser(req);
-      await this.userConnection.softDelete(tokUser.data.id);
+      await this.userConnection.delete(tokUser.data.id);
       return {
         status: true,
         message: 'deleted successfully',
       };
     } catch (error) {
-      // if (id) {
-      //   await this.userConnection.softDelete(id);
-      //   return {
-      //     status: true,
-      //     message: 'deleted successfully',
-      //   };
-      // }
-      // else {
-      //   return {
-      //     status: false,
-      //     message: 'error deleting',
-      //   };
-      // }
-      // }
       return {
         status: false,
         message: error,
