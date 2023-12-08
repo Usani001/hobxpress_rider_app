@@ -220,18 +220,27 @@ export class UsersService {
     }
   }
 
-  async changePassword(req, body) {
+  async changePassword(req, body: updateDto) {
     try {
-      console.log('object');
       const tokUser = await this.authService.getLoggedInUser(req);
-      console.log(tokUser);
       const getUser = await this.userConnection.findOne({
         where: { email: tokUser.data.email },
       });
-      const password = await this.authService.encrypt(body.password);
-      getUser.password = password;
-      await this.userConnection.save(getUser);
-      return { status: true, message: 'New password set' };
+      const passwordIsMatch = await bcrypt.compare(
+        body.old_password,
+        getUser?.password || ''
+      );
+      if (passwordIsMatch) {
+        const password = await this.authService.encrypt(body.password);
+        getUser.password = password;
+        await this.userConnection.save(getUser);
+        return { status: true, message: 'New password set' };
+      } else {
+        return {
+          status: false,
+          message: 'Incorrect Old Passowrd',
+        };
+      }
     } catch (error) {
       return { status: false, message: error };
     }

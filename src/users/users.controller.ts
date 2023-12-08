@@ -28,6 +28,7 @@ export class updateDto {
   first_name?: string;
   last_name?: string;
   password?: string;
+  old_password?: string;
 }
 
 @Controller('users')
