@@ -3,7 +3,6 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  Generated,
   ManyToOne,
   CreateDateColumn,
   DeleteDateColumn,
@@ -73,6 +72,14 @@ export class Order {
 
   @CreateDateColumn({ nullable: true })
   createdAt: Date;
+
+  @Column('double precision', { nullable: true })
+  latitude: number;
+
+  @Column('double precision', { nullable: true })
+  longitude: number;
+
+
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;

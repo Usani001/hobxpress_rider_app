@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { RiderService } from './rider.service';
 import { RiderDto } from './dtos/rider.dto';
+import { Order } from 'src/orders/entity/orders.entity';
 
 export class riderLogin {
     email: string;
@@ -33,7 +34,7 @@ export class RiderController {
 
     @Post('create-rider')
     async createRider(@Body() createRiderDto: RiderDto) {
-        return this.riderService.createRider(createRiderDto, createRiderDto);
+        return this.riderService.createRider(createRiderDto);
     }
 
     @Post('login-rider')
@@ -56,4 +57,24 @@ export class RiderController {
     remove(@Param('id') id: string, @Req() req) {
         return this.riderService.removeRider(id, req);
     }
+
+    @Get('get-rider')
+    async getRider(@Req() req) {
+        return this.riderService.findRider(req);
+    }
+
+    @Get('accept-order')
+    async acceptOrder(@Body() rider: RiderDto, @Body() orders: Order, @Req() req) {
+        return this.riderService.acceptOrder(rider, orders, req);
+    }
+
+    @Get('get-nearby-rider')
+    async findNearbyRider(@Body() rider: RiderDto) {
+        return this.riderService.getNearbyRiders(rider);
+    }
+
 }
+function Ref(): (target: RiderController, propertyKey: "createRider", parameterIndex: 1) => void {
+    throw new Error('Function not implemented.');
+}
+

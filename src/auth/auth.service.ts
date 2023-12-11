@@ -17,7 +17,8 @@ export class AuthService {
     private readonly userConnection: Repository<User>,
     @InjectRepository(Rider)
     private readonly riderConnection: Repository<Rider>
-  ) {}
+  ) { }
+
 
   saltOrRounds = Number(process.env.HASH_SALT);
 
@@ -73,7 +74,7 @@ export class AuthService {
         // Generate OTP
         const OTP = this.generateOtp2(process.env.OTP_SECRETS, data.email);
 
-        const newRider = await this.userConnection.create();
+        const newRider = await this.riderConnection.create();
         // Store OTP in the user's data or a temporary storage (e.g., a cache or session)
         newRider.otp_token = OTP;
         newRider.email = data.email;

@@ -6,6 +6,8 @@ import { Repository } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { riderLogin, updateRiderDto } from './rider.controller';
 import * as bcrypt from 'bcrypt';
+import { Order } from 'src/orders/entity/orders.entity';
+import { CreateOrderDto } from 'src/orders/dto/createOrder.dto';
 var jwt = require('jsonwebtoken');
 
 
@@ -16,89 +18,59 @@ export class RiderService {
     constructor(
         @InjectRepository(Rider)
         private readonly riderRepository: Repository<Rider>,
-        private authService: AuthService
+        private authService: AuthService,
+        @InjectRepository(Order)
+        private readonly orderRepository: Repository<Order>,
     ) { }
 
+    async createRider(createRiderDto: RiderDto) {
+        try {
+            const user = await this.riderRepository.findOneBy({
+                email: createRiderDto.email,
+            });
+            if (user) {
+                createRiderDto.password = await this.authService.encrypt(
+                    createRiderDto.password,
+                );
+                // createRiderDto = user
+                user.first_name = createRiderDto.first_name;
+                user.last_name = createRiderDto.last_name;
+                user.password = createRiderDto.password;
+                console.log(user);
 
+                let newData = await this.riderRepository.save(user);
+                console.log(newData);
 
-
-    async createRider(createRiderDto: RiderDto, query) {
-        if (query) {
-            try {
-                const ref_code = query.ref_code;
-                const refcodeUser = await this.riderRepository.findOneBy({
-                    ref_code: ref_code,
-                });
-                const rider = await this.riderRepository.findOneBy({
-                    email: createRiderDto.email,
-                });
-                if (rider) {
-                    createRiderDto.password = await this.authService.encrypt(
-                        createRiderDto.password
-                    );
-                    createRiderDto['ref_by'] = refcodeUser.email;
-                    refcodeUser.referrals.push(createRiderDto.email);
-                    rider.first_name = createRiderDto.first_name;
-                    rider.last_name = createRiderDto.last_name;
-                    rider.password = createRiderDto.password;
-                    console.log(rider);
-
-                    let newData = await this.riderRepository.save(rider);
-                    await this.riderRepository.save(refcodeUser);
-                    console.log(newData);
-
-                    return {
-                        status: true,
-                        message: 'Rider Created successfully',
-                    };
-                } else {
-                    return {
-                        status: false,
-                        data: 'Create a Rider first',
-                    };
-                }
-            } catch (error) {
                 return {
-                    data: error,
+                    status: true,
+                    message: 'Rider Created successfully',
+                };
+            } else {
+                return {
                     status: false,
-                    message: 'error in creating data',
+                    data: 'Create a Rider first',
                 };
             }
-        } else {
-            try {
-                const rider = await this.riderRepository.findOneBy({
-                    email: createRiderDto.email,
-                });
-                if (rider) {
-                    createRiderDto.password = await this.authService.encrypt(
-                        createRiderDto.password
-                    );
-                    // createUserDto = user
-                    rider.first_name = createRiderDto.first_name;
-                    rider.last_name = createRiderDto.last_name;
-                    rider.password = createRiderDto.password;
-                    console.log(rider);
-
-                    let newData = await this.riderRepository.save(rider);
-                    console.log(newData);
-
-                    return {
-                        status: true,
-                        message: 'Rider Created successfully',
-                    };
-                } else {
-                    return {
-                        status: false,
-                        data: 'Create a Rider first',
-                    };
-                }
-            } catch (error) {
-                return {
-                    data: error,
-                    status: false,
-                    message: 'error in creating data',
-                };
+        } catch (error) {
+            return {
+                data: error,
+                status: false,
+                message: 'error in creating data',
+            };
+        }
+    }
+    async findRider(req) {
+        try {
+            const tokUser = await this.authService.getLoggedInUser(req);
+            const getRider = await this.riderRepository.findOne({
+                where: { id: tokUser.data.id },
+            });
+            if (!getRider || getRider.deletedAt) {
+                return { status: false, message: 'Rider not found' };
             }
+            return { status: true, message: 'Rider found', data: getRider };
+        } catch (error) {
+            return { status: true, message: 'error', data: error };
         }
     }
 
@@ -108,6 +80,13 @@ export class RiderService {
             let data: Rider = await this.riderRepository.findOne({
                 where: { email: request.email },
             });
+            if (!data.password || !data.first_name || !data.last_name) {
+                return {
+                    status: false,
+                    message: 'Finish setting up your profile',
+                    data: 101,
+                };
+            }
             const passwordIsMatch = await bcrypt.compare(
                 request.password,
                 data?.password || ''
@@ -115,9 +94,9 @@ export class RiderService {
             if (data && passwordIsMatch) {
                 const {
                     password,
-                    ref_by,
-                    ref_code,
-                    referrals,
+                    // ref_by,
+                    // ref_code,
+                    // referrals,
                     otp_token,
                     ...Filterdata
                 } = data;
@@ -209,7 +188,7 @@ export class RiderService {
                 await this.riderRepository.softDelete(tokRider.data.id);
                 return {
                     status: true,
-                    message: 'deleted successfully',
+                    message: 'Rider deleted successfully',
                 };
             }
             if (id) {
@@ -233,7 +212,88 @@ export class RiderService {
     }
 
 
+    async getAllRiders(req) {
+        try {
+            if (req) {
+                const riderToken = await this.authService.getLoggedInUser(req);
+                const getRider = await this.riderRepository.findOne({
+                    where: { id: riderToken.data.id },
+                });
+                delete getRider.password
+                return {
+                    status: true,
+                    message: 'Rider Found',
+                    data: getRider,
+                };
+            }
+
+        } catch (error) {
+            return {
+                status: false,
+                message: 'Error in Fetching Rider',
+                data: error,
+            };
+        }
+    }
+
+
+    async acceptOrder(rider: RiderDto, orders: Order, req) {
+        try {
+            const riderToken = await this.authService.getLoggedInUser(req);
+
+            const order = await this.orderRepository.findOne({ where: { id: orders.id } });
+            if (order.rider === null && rider.riderResponse === 'ACCEPT') {
+                rider.order = [order];
+                rider.id = riderToken.id;
+                const saveRider = await this.riderRepository.save(rider);
+                order.rider = saveRider;
+                await this.orderRepository.save(order);
+                return {
+                    status: true,
+                    message: 'Rider has accepted order',
+                    data: saveRider
+                }
+            } else if (rider.riderResponse === 'REJECT') {
+                return {
+                    status: true,
+                    message: 'Rider has rejected order',
+                }
+            }
+            return {
+                status: false,
+                message: 'Rider or Order not found'
+            }
+        } catch (error) {
+            return {
+                status: false,
+                message: 'Error in rider response'
+            }
+        }
+
+
+    }
+    async getNearbyRiders(rider: RiderDto): Promise<Rider[]> {
+        const radius = 10; // Adjust as needed, measured in kilometers
+
+        return this.riderRepository
+            .createQueryBuilder('rider')
+            .select()
+            .addSelect(
+                `earth_distance(ll_to_earth(${rider.latitude}, ${rider.longitude}), ll_to_earth(rider.latitude, rider.longitude))`,
+                'distance',
+            )
+            .where(
+                `earth_distance(ll_to_earth(${rider.latitude}, ${rider.longitude}), ll_to_earth(rider.latitude, rider.longitude)) <= :radius`,
+                { radius },
+            )
+            .orderBy('distance', 'ASC')
+            .limit(1)
+            .getMany();
+    }
+
+
 }
+
 
 
 

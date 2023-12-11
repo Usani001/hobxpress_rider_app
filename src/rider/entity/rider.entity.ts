@@ -39,6 +39,12 @@ export class Rider {
   @Column({ type: 'text', array: true, default: [] })
   notifications: string[];
 
+  @Column('double precision', { nullable: true })
+  latitude: number;
+
+  @Column('double precision', { nullable: true })
+  longitude: number;
+
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
