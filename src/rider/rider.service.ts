@@ -216,10 +216,10 @@ export class RiderService {
         try {
             if (req) {
                 const riderToken = await this.authService.getLoggedInUser(req);
-                const getRider = await this.riderRepository.findOne({
+                const getRider = await this.riderRepository.find({
                     where: { id: riderToken.data.id },
                 });
-                delete getRider.password
+
                 return {
                     status: true,
                     message: 'Rider Found',

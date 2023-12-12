@@ -15,7 +15,7 @@ export class RiderDto extends OmitType(Rider, [
   @IsNotEmpty({ message: 'Rider must provide a response' })
   riderResponse: string;
 
-  @IsNotEmpty({ message: 'Please provide a rider Id' })
+  @IsNotEmpty({ message: 'Please provide an order Id' })
   id: string;
 }
 
