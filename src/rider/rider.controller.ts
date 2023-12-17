@@ -12,10 +12,13 @@ import {
 import { RiderService } from './rider.service';
 import { RiderDto } from './dtos/rider.dto';
 import { Order } from 'src/orders/entity/orders.entity';
-import { Rider } from './entity/rider.entity';
+import { IsNotEmpty } from 'class-validator';
 
 export class riderLogin {
+    @IsNotEmpty({ message: 'Please provide your registration code' })
     reg_code: string;
+
+    @IsNotEmpty({ message: 'Please provide your company Name' })
     riders_company: string;
 }
 export class refCode {

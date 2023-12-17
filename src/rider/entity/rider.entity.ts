@@ -43,7 +43,10 @@ export class Rider {
   @OneToMany(() => Order, (order) => order.rider)
   order: Order[];
 
-  @Column({ default: '' })
+  @Column({
+    default: ''
+  })
+
   reg_code: string;
 
   @Column({ default: '' })

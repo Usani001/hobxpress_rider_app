@@ -48,7 +48,7 @@ export class RiderService {
             } else {
                 return {
                     status: false,
-                    data: 'Rider with ' + createRiderDto.reg_code + ' already exist',
+                    data: 'Rider with registration code ' + createRiderDto.reg_code + ' already exist',
                 };
             }
         } catch (error) {
@@ -78,16 +78,6 @@ export class RiderService {
 
     async loginRider(request: riderLogin) {
         try {
-            // let data: Rider = await this.riderRepository.findOne({
-            //     where: { reg_code: request.reg_code },
-            // });
-            // if (!data.password || !data.first_name || !data.last_name) {
-            //     return {
-            //         status: false,
-            //         message: 'Finish setting up your profile',
-            //         data: 101,
-            //     };
-            // }
             const isRider = await this.riderRepository.findOne({
                 where: { reg_code: request.reg_code }
             });
@@ -108,7 +98,7 @@ export class RiderService {
                 return {
                     status: true,
                     token: token,
-                    data: Filterdata,
+                    data: isRider,
                     message: 'login successfully',
                 };
             } else {
