@@ -12,10 +12,11 @@ import {
 import { RiderService } from './rider.service';
 import { RiderDto } from './dtos/rider.dto';
 import { Order } from 'src/orders/entity/orders.entity';
+import { Rider } from './entity/rider.entity';
 
 export class riderLogin {
-    email: string;
-    password: string;
+    reg_code: string;
+    riders_company: string;
 }
 export class refCode {
     referal_code: string;

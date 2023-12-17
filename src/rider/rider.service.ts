@@ -7,7 +7,6 @@ import { AuthService } from 'src/auth/auth.service';
 import { riderLogin, updateRiderDto } from './rider.controller';
 import * as bcrypt from 'bcrypt';
 import { Order } from 'src/orders/entity/orders.entity';
-import { CreateOrderDto } from 'src/orders/dto/createOrder.dto';
 var jwt = require('jsonwebtoken');
 
 
@@ -25,30 +24,31 @@ export class RiderService {
 
     async createRider(createRiderDto: RiderDto) {
         try {
-            const user = await this.riderRepository.findOneBy({
-                email: createRiderDto.email,
-            });
-            if (user) {
-                createRiderDto.password = await this.authService.encrypt(
-                    createRiderDto.password,
-                );
+            const rider = await this.riderRepository.findOneBy({ reg_code: createRiderDto.reg_code });
+            if (!rider) {
+                // createRiderDto.password = await this.authService.encrypt(
+                //     createRiderDto.password,
+                // );
                 // createRiderDto = user
-                user.first_name = createRiderDto.first_name;
-                user.last_name = createRiderDto.last_name;
-                user.password = createRiderDto.password;
-                console.log(user);
+                const newRider = await this.riderRepository.create();
 
-                let newData = await this.riderRepository.save(user);
+                newRider.reg_code = createRiderDto.reg_code;
+                newRider.riders_company = createRiderDto.riders_company;
+
+                console.log(newRider);
+
+                let newData = await this.riderRepository.save(newRider);
                 console.log(newData);
 
                 return {
                     status: true,
                     message: 'Rider Created successfully',
+                    data: newRider
                 };
             } else {
                 return {
                     status: false,
-                    data: 'Create a Rider first',
+                    data: 'Rider with ' + createRiderDto.reg_code + ' already exist',
                 };
             }
         } catch (error) {
@@ -59,6 +59,7 @@ export class RiderService {
             };
         }
     }
+
     async findRider(req) {
         try {
             const tokUser = await this.authService.getLoggedInUser(req);
@@ -77,29 +78,25 @@ export class RiderService {
 
     async loginRider(request: riderLogin) {
         try {
-            let data: Rider = await this.riderRepository.findOne({
-                where: { email: request.email },
+            // let data: Rider = await this.riderRepository.findOne({
+            //     where: { reg_code: request.reg_code },
+            // });
+            // if (!data.password || !data.first_name || !data.last_name) {
+            //     return {
+            //         status: false,
+            //         message: 'Finish setting up your profile',
+            //         data: 101,
+            //     };
+            // }
+            const isRider = await this.riderRepository.findOne({
+                where: { reg_code: request.reg_code }
             });
-            if (!data.password || !data.first_name || !data.last_name) {
-                return {
-                    status: false,
-                    message: 'Finish setting up your profile',
-                    data: 101,
-                };
-            }
-            const passwordIsMatch = await bcrypt.compare(
-                request.password,
-                data?.password || ''
-            );
-            if (data && passwordIsMatch) {
+            if (isRider) {
                 const {
-                    password,
-                    // ref_by,
-                    // ref_code,
-                    // referrals,
-                    otp_token,
+                    reg_code,
+                    riders_company,
                     ...Filterdata
-                } = data;
+                } = isRider;
                 var token = jwt.sign(
                     {
                         data: Filterdata,
@@ -117,7 +114,7 @@ export class RiderService {
             } else {
                 return {
                     status: false,
-                    message: 'login failed, either email or password is wrong',
+                    message: 'login failed, Please check your reg_code or company name',
                 };
             }
         } catch (error) {

@@ -27,14 +27,6 @@ export class Rider {
   @Column({ default: 0 })
   otp_token: number;
 
-  // @Column({ default: '', unique: true })
-  // ref_code: string = code;
-
-  // @Column({ default: '' })
-  // ref_by: string;
-
-  // @Column({ type: 'text', array: true, default: [] })
-  // referrals: string[];
 
   @Column({ type: 'text', array: true, default: [] })
   notifications: string[];
@@ -50,4 +42,10 @@ export class Rider {
 
   @OneToMany(() => Order, (order) => order.rider)
   order: Order[];
+
+  @Column({ default: '' })
+  reg_code: string;
+
+  @Column({ default: '' })
+  riders_company: string;
 }
