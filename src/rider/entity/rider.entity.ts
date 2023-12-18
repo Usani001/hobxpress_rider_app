@@ -15,7 +15,7 @@ export class Rider {
   @Column({ default: '' })
   password: string;
 
-  // @Column({ default: '', unique: true })
+  // @Column({ default: '', unique: false })
   // email: string;
 
   @Column({ default: '' })
@@ -44,7 +44,7 @@ export class Rider {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @OneToMany(() => Order, (order) => order.rider)
+  @OneToMany(() => Order, (order) => order.rider,)
   order: Order[];
 
   @Column({

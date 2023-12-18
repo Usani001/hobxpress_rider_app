@@ -7,6 +7,8 @@ import { AuthService } from 'src/auth/auth.service';
 import { riderLogin, updateRiderDto } from './rider.controller';
 import * as bcrypt from 'bcrypt';
 import { Order } from 'src/orders/entity/orders.entity';
+import { OrdersService } from 'src/orders/orders.service';
+import { plainToClass } from 'class-transformer';
 var jwt = require('jsonwebtoken');
 
 
@@ -20,6 +22,7 @@ export class RiderService {
         private authService: AuthService,
         @InjectRepository(Order)
         private readonly orderRepository: Repository<Order>,
+        private readonly orderService: OrdersService,
     ) { }
 
     async createRider(createRiderDto: riderLogin) {
@@ -125,10 +128,6 @@ export class RiderService {
             if (body.last_name) {
                 getRider.last_name = body.last_name;
             }
-            if (body.password) {
-                const password = await this.authService.encrypt(body.password);
-                getRider.password = password;
-            }
             // if (body.email) {
             //     getRider.email = body.email;
             // }
@@ -195,18 +194,14 @@ export class RiderService {
     }
 
 
-    async getAllRiders(req) {
+    async getAllRiders() {
         try {
-            if (req) {
-                const riderToken = await this.authService.getLoggedInUser(req);
-                const getRider = await this.riderRepository.find({
-                    where: { id: riderToken.data.id },
-                });
-
+            const getRiders = await this.riderRepository.find();
+            if (getRiders) {
                 return {
                     status: true,
                     message: 'Rider Found',
-                    data: getRider,
+                    data: getRiders,
                 };
             }
 
@@ -224,17 +219,16 @@ export class RiderService {
         try {
             const riderToken = await this.authService.getLoggedInUser(req);
 
-            const order = await this.orderRepository.findOne({ where: { id: orders.id } });
-            if (order.rider === null && rider.riderResponse === 'ACCEPT') {
-                rider.order = [order];
-                rider.id = riderToken.id;
-                const saveRider = await this.riderRepository.save(rider);
-                order.rider = saveRider;
-                await this.orderRepository.save(order);
+            // const order = await this.orderRepository.findOne({ where: { id: orders.id } });
+            const order = await this.orderService.findOrder({ id: orders.id })
+
+            if (order && rider.riderResponse === 'ACCEPT') {
+                rider.order = [order.data];
+                await this.orderRepository.save(rider.order);
                 return {
                     status: true,
                     message: 'Rider has accepted order',
-                    data: saveRider
+                    data: rider.order,
                 }
             } else if (rider.riderResponse === 'REJECT') {
                 return {
@@ -272,6 +266,35 @@ export class RiderService {
             .orderBy('distance', 'ASC')
             .limit(1)
             .getMany();
+    }
+
+    async getAcceptedOrders(req) {
+        try {
+            const tokUser = await this.authService.getLoggedInUser(req);
+
+            const riderAcceptedOrder = await this.riderRepository.find({
+                where: { id: tokUser.data.id },
+            });;
+
+            if (riderAcceptedOrder) {
+                return {
+                    status: true,
+                    message: 'Orders Found',
+                    data: riderAcceptedOrder,
+                }
+            }
+            return {
+                status: false,
+                message: 'Orders Not Found',
+                data: tokUser,
+            };
+        } catch (error) {
+            return {
+                status: false,
+                message: 'Order Not Found',
+                data: error,
+            };
+        }
     }
 
 

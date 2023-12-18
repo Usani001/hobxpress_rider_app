@@ -8,10 +8,10 @@ export class RiderDto extends OmitType(Rider, [
   'deletedAt',
 ] as const) {
 
-  // @IsNotEmpty({ message: 'Rider must provide a response' })
+  @IsNotEmpty({ message: 'Rider must provide a response' })
   riderResponse: string;
 
-  // @IsNotEmpty({ message: 'Please provide an order Id' })
+  @IsNotEmpty({ message: 'Please provide an order Id' })
   id: string;
 }
 

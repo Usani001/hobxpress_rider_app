@@ -77,8 +77,11 @@ export class RiderController {
         return this.riderService.getNearbyRiders(rider);
     }
 
+    @Get('all')
+    getOrders(@Req() req) {
+        return this.riderService.getAcceptedOrders(req);
+    }
+
 }
-function Ref(): (target: RiderController, propertyKey: "createRider", parameterIndex: 1) => void {
-    throw new Error('Function not implemented.');
-}
+
 

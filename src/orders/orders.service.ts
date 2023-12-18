@@ -31,7 +31,7 @@ export class OrdersService {
     }
   }
 
-  async findOrders(body, req) {
+  async findOrders(req) {
     try {
       const tokUser = await this.authService.getLoggedInUser(req);
       const getOrder = await this.orderConnection.find({
@@ -51,11 +51,13 @@ export class OrdersService {
     }
   }
 
-  async findOrder(body, req) {
+  async findOrder(body) {
     try {
-      const getOrder = await this.orderConnection.findOne({
-        where: { id: body.id },
-      });
+      // const getOrders = await this.orderConnection.find()
+      const getOrder = await this.orderConnection.findOneBy({
+        id: body.id
+      },
+      );
       return {
         status: true,
         message: 'Order Found',
@@ -64,7 +66,7 @@ export class OrdersService {
     } catch (error) {
       return {
         status: false,
-        message: 'Order Found',
+        message: 'Order Not Found',
         data: error,
       };
     }

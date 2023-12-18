@@ -27,13 +27,13 @@ export class OrdersController {
   }
 
   @Get('all')
-  getOrders(@Body() body, @Req() req) {
-    return this.orderService.findOrders(body, req);
+  getOrders(@Req() req) {
+    return this.orderService.findOrders(req);
   }
 
-  @Get()
-  getOrder(@Body() body, @Req() req) {
-    return this.orderService.findOrder(body, req);
+  @Get('one-order')
+  getOrder(@Body() body) {
+    return this.orderService.findOrder(body);
   }
 
   @Post('review')
