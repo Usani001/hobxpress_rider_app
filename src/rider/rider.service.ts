@@ -22,14 +22,10 @@ export class RiderService {
         private readonly orderRepository: Repository<Order>,
     ) { }
 
-    async createRider(createRiderDto: RiderDto) {
+    async createRider(createRiderDto: riderLogin) {
         try {
             const rider = await this.riderRepository.findOneBy({ reg_code: createRiderDto.reg_code });
             if (!rider) {
-                // createRiderDto.password = await this.authService.encrypt(
-                //     createRiderDto.password,
-                // );
-                // createRiderDto = user
                 const newRider = await this.riderRepository.create();
 
                 newRider.reg_code = createRiderDto.reg_code;
@@ -133,9 +129,9 @@ export class RiderService {
                 const password = await this.authService.encrypt(body.password);
                 getRider.password = password;
             }
-            if (body.email) {
-                getRider.email = body.email;
-            }
+            // if (body.email) {
+            //     getRider.email = body.email;
+            // }
 
             await this.riderRepository.save(getRider);
             return {
@@ -151,22 +147,22 @@ export class RiderService {
     }
 
     //update password , forgot passwod, set password to randomstring, send randstring to email
-    async resetRiderPassword(body: updateRiderDto) {
-        try {
-            const getRider = await this.riderRepository.findOne({
-                where: { email: body.email },
-            });
-            const randomPass = await this.authService.generateRandomString(10);
-            //send to user email
-            console.log(randomPass);
-            const password = await this.authService.encrypt(randomPass);
-            getRider.password = password;
-            await this.riderRepository.save(getRider);
-            return { status: true, message: 'New password sent' };
-        } catch (error) {
-            return { status: false, message: error };
-        }
-    }
+    // async resetRiderPassword(body: updateRiderDto) {
+    //     try {
+    //         const getRider = await this.riderRepository.findOne({
+    //             where: { email: body.email },
+    //         });
+    //         const randomPass = await this.authService.generateRandomString(10);
+    //         //send to user email
+    //         console.log(randomPass);
+    //         const password = await this.authService.encrypt(randomPass);
+    //         getRider.password = password;
+    //         await this.riderRepository.save(getRider);
+    //         return { status: true, message: 'New password sent' };
+    //     } catch (error) {
+    //         return { status: false, message: error };
+    //     }
+    // }
 
     async removeRider(id: string, req) {
         try {

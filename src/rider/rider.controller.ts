@@ -37,7 +37,7 @@ export class RiderController {
     constructor(private readonly riderService: RiderService) { }
 
     @Post('create-rider')
-    async createRider(@Body() createRiderDto: RiderDto) {
+    async createRider(@Body() createRiderDto: riderLogin) {
         return this.riderService.createRider(createRiderDto);
     }
 
@@ -46,10 +46,10 @@ export class RiderController {
         return this.riderService.loginRider(request);
     }
 
-    @Patch('forgotpassword')
-    async resetRiderPassword(@Body() request: updateRiderDto) {
-        return this.riderService.resetRiderPassword(request);
-    }
+    // @Patch('forgotpassword')
+    // async resetRiderPassword(@Body() request: updateRiderDto) {
+    //     return this.riderService.resetRiderPassword(request);
+    // }
 
     //auth guard
     @Patch('profile')

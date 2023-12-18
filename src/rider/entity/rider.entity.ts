@@ -15,8 +15,8 @@ export class Rider {
   @Column({ default: '' })
   password: string;
 
-  @Column({ default: '', unique: true })
-  email: string;
+  // @Column({ default: '', unique: true })
+  // email: string;
 
   @Column({ default: '' })
   first_name: string;
@@ -31,10 +31,14 @@ export class Rider {
   @Column({ type: 'text', array: true, default: [] })
   notifications: string[];
 
-  @Column('double precision', { nullable: true })
+  @Column('double precision', {
+    nullable: true
+  })
   latitude: number;
 
-  @Column('double precision', { nullable: true })
+  @Column('double precision', {
+    nullable: true
+  })
   longitude: number;
 
   @DeleteDateColumn({ nullable: true })

@@ -11,7 +11,7 @@ export class autheObj {
 }
 @Controller('Auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Get('verifyOtp')
   verify(@Body() data: autheoObj) {
@@ -29,13 +29,13 @@ export class AuthController {
     return this.authService.resendOTP(data);
   }
 
-  @Get('sendRiderOtp')
-  sendRiderOTP(@Body() data: autheObj) {
-    return this.authService.sendRiderOTP(data);
-  }
+  // @Get('sendRiderOtp')
+  // sendRiderOTP(@Body() data: autheObj) {
+  //   return this.authService.sendRiderOTP(data);
+  // }
 
-  @Get('verifyRiderOtp')
-  verifyRider(@Body() data: autheoObj) {
-    return this.authService.verifyRiderOTP(data);
-  }
+  // @Get('verifyRiderOtp')
+  // verifyRider(@Body() data: autheoObj) {
+  //   return this.authService.verifyRiderOTP(data);
+  // }
 }

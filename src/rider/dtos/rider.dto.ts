@@ -3,19 +3,15 @@ import { IsNotEmpty } from 'class-validator';
 import { Rider } from '../entity/rider.entity';
 
 export class RiderDto extends OmitType(Rider, [
-
-  // 'ref_code',
-  // 'referrals',
-  // 'ref_by',
   'id',
   'otp_token',
   'deletedAt',
 ] as const) {
 
-  @IsNotEmpty({ message: 'Rider must provide a response' })
+  // @IsNotEmpty({ message: 'Rider must provide a response' })
   riderResponse: string;
 
-  @IsNotEmpty({ message: 'Please provide an order Id' })
+  // @IsNotEmpty({ message: 'Please provide an order Id' })
   id: string;
 }
 
