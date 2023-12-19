@@ -218,10 +218,10 @@ export class RiderService {
     async acceptOrder(request: RiderDto, orders: Order, req) {
         try {
             const riderToken = await this.authService.getLoggedInUser(req);
-            const rider = await this.riderRepository.findOneBy({ id: riderToken.id })
+            const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
             const order = await this.orderService.findOrder({ id: orders.id })
 
-            if (order.status === true && request.riderResponse === 'ACCEPT') {
+            if (order.status === true && request.riderResponse === 'ACCEPT' && rider) {
                 const accept = [...rider.acceptedOrders, order.data.id]
 
                 rider.acceptedOrders = accept;
@@ -279,14 +279,16 @@ export class RiderService {
 
             const rider = await this.riderRepository.findOneBy({
 
-                id: tokUser.id
+                id: tokUser.data.id
 
             });
 
             // const riderAcceptedOrder = rider.data.acceptedOrders
 
             if (rider.acceptedOrders.length > 0) {
+                console.log(rider)
                 return {
+
                     status: true,
                     message: 'Orders Found',
                     data: rider.acceptedOrders,
