@@ -1,4 +1,5 @@
 import { Order } from 'src/orders/entity/orders.entity';
+import { text } from 'stream/consumers';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { DeleteDateColumn } from 'typeorm';
@@ -31,6 +32,12 @@ export class Rider {
   @Column({ type: 'text', array: true, default: [] })
   notifications: string[];
 
+  @Column({
+    type: 'text',
+    array: true, default: [],
+  })
+  acceptedOrders: Order[];
+
   @Column('double precision', {
     nullable: true
   })
@@ -46,6 +53,7 @@ export class Rider {
 
   @OneToMany(() => Order, (order) => order.rider,)
   order: Order[];
+
 
   @Column({
     default: ''

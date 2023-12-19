@@ -29,7 +29,7 @@ export class RiderService {
         try {
             const rider = await this.riderRepository.findOneBy({ reg_code: createRiderDto.reg_code });
             if (!rider) {
-                const newRider = await this.riderRepository.create();
+                const newRider = this.riderRepository.create();
 
                 newRider.reg_code = createRiderDto.reg_code;
                 newRider.riders_company = createRiderDto.riders_company;
@@ -215,22 +215,24 @@ export class RiderService {
     }
 
 
-    async acceptOrder(rider: RiderDto, orders: Order, req) {
+    async acceptOrder(request: RiderDto, orders: Order, req) {
         try {
             const riderToken = await this.authService.getLoggedInUser(req);
-
-            // const order = await this.orderRepository.findOne({ where: { id: orders.id } });
+            const rider = await this.riderRepository.findOneBy({ id: riderToken.id })
             const order = await this.orderService.findOrder({ id: orders.id })
 
-            if (order && rider.riderResponse === 'ACCEPT') {
-                rider.order = [order.data];
-                await this.orderRepository.save(rider.order);
+            if (order && request.riderResponse === 'ACCEPT') {
+                const accept = [...rider.acceptedOrders, order.data]
+
+                rider.acceptedOrders = accept;
+                const saveRider = await this.riderRepository.save(rider)
+                console.log(saveRider)
                 return {
                     status: true,
                     message: 'Rider has accepted order',
-                    data: rider.order,
+                    data: saveRider,
                 }
-            } else if (rider.riderResponse === 'REJECT') {
+            } else if (request.riderResponse === 'REJECT') {
                 return {
                     status: true,
                     message: 'Rider has rejected order',
@@ -241,9 +243,11 @@ export class RiderService {
                 message: 'Rider or Order not found'
             }
         } catch (error) {
+            console.log(error);
             return {
                 status: false,
-                message: 'Error in rider response'
+                message: 'Error in rider response',
+                data: error
             }
         }
 
@@ -268,27 +272,35 @@ export class RiderService {
             .getMany();
     }
 
+
     async getAcceptedOrders(req) {
         try {
             const tokUser = await this.authService.getLoggedInUser(req);
 
-            const riderAcceptedOrder = await this.riderRepository.find({
-                where: { id: tokUser.data.id },
-            });;
+            const rider = await this.riderRepository.findOneBy({
 
-            if (riderAcceptedOrder) {
+                id: tokUser.id
+
+            });
+
+            // const riderAcceptedOrder = rider.data.acceptedOrders
+
+            if (rider) {
                 return {
                     status: true,
                     message: 'Orders Found',
-                    data: riderAcceptedOrder,
+                    data: rider.acceptedOrders,
+                    numberOfAcceptedOrders: rider.acceptedOrders.length
                 }
             }
+
             return {
                 status: false,
                 message: 'Orders Not Found',
-                data: tokUser,
+
             };
         } catch (error) {
+            console.log(error);
             return {
                 status: false,
                 message: 'Order Not Found',

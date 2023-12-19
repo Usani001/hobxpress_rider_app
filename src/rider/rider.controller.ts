@@ -13,6 +13,7 @@ import { RiderService } from './rider.service';
 import { RiderDto } from './dtos/rider.dto';
 import { Order } from 'src/orders/entity/orders.entity';
 import { IsNotEmpty } from 'class-validator';
+import { Rider } from './entity/rider.entity';
 
 export class riderLogin {
     @IsNotEmpty({ message: 'Please provide your registration code' })
@@ -68,8 +69,8 @@ export class RiderController {
     }
 
     @Post('accept-order')
-    async acceptOrder(@Body() rider: RiderDto, @Body() orders: Order, @Req() req) {
-        return this.riderService.acceptOrder(rider, orders, req);
+    async acceptOrder(@Body() request: RiderDto, @Body() orders: Order, @Req() req) {
+        return this.riderService.acceptOrder(request, orders, req);
     }
 
     @Get('get-nearby-rider')
