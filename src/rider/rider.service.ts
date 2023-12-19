@@ -223,6 +223,7 @@ export class RiderService {
 
             if (order.status === true && request.riderResponse === 'ACCEPT' && rider) {
                 const accept = [...rider.acceptedOrders, order.data.id]
+                const accept1 = [...rider.acceptedOrders, order.data.pickup_add]
 
                 rider.acceptedOrders = accept;
                 const saveRider = await this.riderRepository.save(rider)
@@ -230,7 +231,7 @@ export class RiderService {
                 return {
                     status: true,
                     message: 'Rider has accepted order',
-                    data: saveRider.acceptedOrders,
+                    data: order.data,
                 }
             } else if (request.riderResponse === 'REJECT') {
                 return {
