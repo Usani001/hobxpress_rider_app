@@ -285,7 +285,7 @@ export class RiderService {
 
             // const riderAcceptedOrder = rider.data.acceptedOrders
 
-            if (rider) {
+            if (rider.acceptedOrders.length > 0) {
                 return {
                     status: true,
                     message: 'Orders Found',
@@ -296,7 +296,7 @@ export class RiderService {
 
             return {
                 status: false,
-                message: 'Orders Not Found',
+                message: 'Order or Rider Not Found',
 
             };
         } catch (error) {
