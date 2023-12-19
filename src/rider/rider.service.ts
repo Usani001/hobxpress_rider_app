@@ -279,7 +279,7 @@ export class RiderService {
 
             const rider = await this.riderRepository.findOneBy({
 
-                id: tokUser.id
+                id: tokUser.data.id
 
             });
 
