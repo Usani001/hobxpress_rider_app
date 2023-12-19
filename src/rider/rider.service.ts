@@ -221,8 +221,8 @@ export class RiderService {
             const rider = await this.riderRepository.findOneBy({ id: riderToken.id })
             const order = await this.orderService.findOrder({ id: orders.id })
 
-            if (order && request.riderResponse === 'ACCEPT') {
-                const accept = [...rider.acceptedOrders, order.data]
+            if (order.status === true && request.riderResponse === 'ACCEPT') {
+                const accept = [...rider.acceptedOrders, order.data.id]
 
                 rider.acceptedOrders = accept;
                 const saveRider = await this.riderRepository.save(rider)
@@ -230,7 +230,7 @@ export class RiderService {
                 return {
                     status: true,
                     message: 'Rider has accepted order',
-                    data: saveRider,
+                    data: saveRider.acceptedOrders,
                 }
             } else if (request.riderResponse === 'REJECT') {
                 return {
