@@ -286,7 +286,7 @@ export class RiderService {
             const rider = await this.riderRepository.findOneBy({
                 id: tokUser.data.id
             });
-            if (rider.acceptedOrders.length > 0) {
+            if (rider.acceptedOrders.length >= 0) {
                 console.log(rider)
                 return {
 
@@ -320,11 +320,11 @@ export class RiderService {
             const rider = await this.riderRepository.findOneBy({
                 id: tokUser.data.id
             });
-            if (rider.acceptedOrders.length > 0) {
+            if (rider) {
                 // for (i = 0; i < rider.acceptedOrders.length; i++) {
 
                 // }
-                console.log(rider)
+                console.log(rider.acceptedOrders.length > 0)
                 return {
 
                     status: true,
