@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { riderLogin, updateRiderDto } from './rider.controller';
 import * as bcrypt from 'bcrypt';
-import { Order } from 'src/orders/entity/orders.entity';
+import { Order, orderType } from 'src/orders/entity/orders.entity';
 import { OrdersService } from 'src/orders/orders.service';
 import { plainToClass } from 'class-transformer';
 var jwt = require('jsonwebtoken');
@@ -219,11 +219,14 @@ export class RiderService {
         try {
             const riderToken = await this.authService.getLoggedInUser(req);
             const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
-            const order = await this.orderService.findOrder({ id: orders.id })
+            const order = await this.orderService.changeOrderTypeToInProgress({ id: orders.id })
 
-            if (order.status === true && request.riderResponse === 'ACCEPT' && rider) {
-                const accept = [...rider.acceptedOrders, order.data.id]
-                const accept1 = [...rider.acceptedOrders, order.data.pickup_add]
+            if (order.status === true && request.riderResponse === 'ACCEPT' &&
+                rider) {
+
+                const accept = [...rider.acceptedOrders, order.data.id, order.data.user_id,
+                order.data.createdAt, order.data.recieverName];
+
 
                 rider.acceptedOrders = accept;
                 const saveRider = await this.riderRepository.save(rider)
@@ -232,6 +235,7 @@ export class RiderService {
                     status: true,
                     message: 'Rider has accepted order',
                     data: order.data,
+
                 }
             } else if (request.riderResponse === 'REJECT') {
                 return {
@@ -293,7 +297,7 @@ export class RiderService {
                     status: true,
                     message: 'Orders Found',
                     data: rider.acceptedOrders,
-                    numberOfAcceptedOrders: rider.acceptedOrders.length
+                    numberOfAcceptedOrders: rider.acceptedOrders.length / 4
                 }
             }
 

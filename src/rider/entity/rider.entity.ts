@@ -51,7 +51,7 @@ export class Rider {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @OneToMany(() => Order, (order) => order.rider,)
+  @OneToMany(() => Order, (order) => order.rider)
   order: Order[];
 
 

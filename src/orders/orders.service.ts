@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Order } from './entity/orders.entity';
+import { Order, orderType } from './entity/orders.entity';
 import { Repository } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { CreateOrderDto } from './dto/createOrder.dto';
@@ -53,15 +53,72 @@ export class OrdersService {
 
   async findOrder(body) {
     try {
-      // const getOrders = await this.orderConnection.find()
+
       const getOrder = await this.orderConnection.findOneBy({
         id: body.id
       },
       );
+
+
       return {
         status: true,
         message: 'Order Found',
         data: getOrder,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        message: 'Order Not Found',
+        data: error,
+      };
+    }
+  }
+
+  async changeOrderTypeToInProgress(body) {
+    try {
+
+      const getOrder = await this.orderConnection.findOneBy({
+        id: body.id
+      },
+      );
+      if (getOrder.type === orderType.ACTIVE) {
+        getOrder.type = orderType.INPROGRESS
+        const newOrder = await this.orderConnection.save(getOrder);
+
+        return {
+          status: true,
+          message: 'Order Found',
+          data: newOrder,
+        };
+      }
+      return {
+        status: false,
+        message: 'Order Not found or has been accepted',
+
+      }
+    } catch (error) {
+      return {
+        status: false,
+        message: 'Order Not Found',
+        data: error,
+      };
+    }
+  }
+
+  async changeOrderTypeToCompleted(body) {
+    try {
+
+      const getOrder = await this.orderConnection.findOneBy({
+        id: body.id
+      },
+      );
+      getOrder.type = orderType.COMPLETED
+      const newOrder = await this.orderConnection.save(getOrder);
+
+      return {
+        status: true,
+        message: 'Order Found',
+        data: newOrder,
       };
     } catch (error) {
       return {

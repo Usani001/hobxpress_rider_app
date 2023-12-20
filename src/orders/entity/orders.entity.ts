@@ -10,6 +10,7 @@ import {
 
 export enum orderType {
   ACTIVE = 'ACTIVE',
+  INPROGRESS = 'INPROGRESS',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
