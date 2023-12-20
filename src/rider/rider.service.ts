@@ -215,20 +215,16 @@ export class RiderService {
     }
 
 
-    async acceptOrder(request: RiderDto, orders: Order, req, body) {
+    async acceptOrder(request: RiderDto, orders: Order, req) {
         try {
             const riderToken = await this.authService.getLoggedInUser(req);
             const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
             const order = await this.orderService.changeOrderTypeToInProgress({ id: orders.id })
-
-
-
-
             if (order.status === true && request.riderResponse === 'ACCEPT' &&
                 rider) {
-                // const accept = [...rider.acceptedOrders, order.data.id, order.data.user_id,
-                // order.data.createdAt, order.data.recieverName, order.data.itemName];
+
                 const accept = [...rider.acceptedOrders, order.data];
+                rider.riderRatings += order.data.ratings;
 
                 rider.acceptedOrders = accept;
                 const saveRider = await this.riderRepository.save(rider)
@@ -287,6 +283,7 @@ export class RiderService {
             const rider = await this.riderRepository.findOneBy({
                 id: tokUser.data.id
             });
+
             if (rider.acceptedOrders.length >= 0) {
                 console.log(rider)
                 return {
@@ -294,7 +291,10 @@ export class RiderService {
                     status: true,
                     message: 'Orders Found',
                     data: rider.acceptedOrders,
-                    numberOfAcceptedOrders: rider.acceptedOrders.length / 5
+                    numberOfAcceptedOrders: rider.acceptedOrders.length,
+                    totalRating: rider.riderRatings
+
+
                 }
             }
 
