@@ -58,8 +58,8 @@ export class OrdersService {
         id: body.id
       },
       );
-
-
+      getOrder.type = orderType.ACTIVE
+      const newOrder = await this.orderConnection.save(getOrder);
       return {
         status: true,
         message: 'Order Found',
@@ -88,7 +88,7 @@ export class OrdersService {
         return {
           status: true,
           message: 'Order Found',
-          data: newOrder,
+          data: getOrder,
         };
       }
       return {

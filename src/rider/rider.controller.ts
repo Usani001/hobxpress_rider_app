@@ -63,8 +63,8 @@ export class RiderController {
     }
 
     @Post('accept-order')
-    async acceptOrder(@Body() request: RiderDto, @Body() orders: Order, @Req() req) {
-        return this.riderService.acceptOrder(request, orders, req);
+    async acceptOrder(@Body() request: RiderDto, @Body() orders: Order, @Req() req, body) {
+        return this.riderService.acceptOrder(request, orders, req, body);
     }
 
     @Get('get-nearby-rider')

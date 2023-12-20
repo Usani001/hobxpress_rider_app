@@ -8,7 +8,6 @@ import { riderLogin, updateRiderDto } from './rider.controller';
 import * as bcrypt from 'bcrypt';
 import { Order, orderType } from 'src/orders/entity/orders.entity';
 import { OrdersService } from 'src/orders/orders.service';
-import { plainToClass } from 'class-transformer';
 var jwt = require('jsonwebtoken');
 
 
@@ -215,15 +214,17 @@ export class RiderService {
     }
 
 
-    async acceptOrder(request: RiderDto, orders: Order, req) {
+    async acceptOrder(request: RiderDto, orders: Order, req, body) {
         try {
             const riderToken = await this.authService.getLoggedInUser(req);
             const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
             const order = await this.orderService.changeOrderTypeToInProgress({ id: orders.id })
 
+
+
+
             if (order.status === true && request.riderResponse === 'ACCEPT' &&
                 rider) {
-
                 const accept = [...rider.acceptedOrders, order.data.id, order.data.user_id,
                 order.data.createdAt, order.data.recieverName, order.data.itemName];
 
@@ -283,13 +284,8 @@ export class RiderService {
             const tokUser = await this.authService.getLoggedInUser(req);
 
             const rider = await this.riderRepository.findOneBy({
-
                 id: tokUser.data.id
-
             });
-
-            // const riderAcceptedOrder = rider.data.acceptedOrders
-
             if (rider.acceptedOrders.length > 0) {
                 console.log(rider)
                 return {
@@ -297,7 +293,44 @@ export class RiderService {
                     status: true,
                     message: 'Orders Found',
                     data: rider.acceptedOrders,
-                    numberOfAcceptedOrders: rider.acceptedOrders.length / 4
+                    numberOfAcceptedOrders: rider.acceptedOrders.length / 5
+                }
+            }
+
+            return {
+                status: false,
+                message: 'Order or Rider Not Found',
+
+            };
+        } catch (error) {
+            console.log(error);
+            return {
+                status: false,
+                message: 'Order Not Found',
+                data: error,
+            };
+        }
+    }
+
+
+    async cancelOrder(req) {
+        try {
+            const tokUser = await this.authService.getLoggedInUser(req);
+
+            const rider = await this.riderRepository.findOneBy({
+                id: tokUser.data.id
+            });
+            if (rider.acceptedOrders.length > 0) {
+                // for (i = 0; i < rider.acceptedOrders.length; i++) {
+
+                // }
+                console.log(rider)
+                return {
+
+                    status: true,
+                    message: 'Orders Found',
+                    data: rider.acceptedOrders,
+                    numberOfAcceptedOrders: rider.acceptedOrders.length / 5
                 }
             }
 
