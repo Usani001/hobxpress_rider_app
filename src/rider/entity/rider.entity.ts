@@ -41,8 +41,8 @@ export class Rider {
   notifications: string[];
 
   @Column({
-    type: 'text',
-    array: true, default: [],
+    type: 'json',
+    default: [],
   })
   acceptedOrders: Order[];
 

@@ -8,6 +8,7 @@ import { riderLogin, updateRiderDto } from './rider.controller';
 import * as bcrypt from 'bcrypt';
 import { Order, orderType } from 'src/orders/entity/orders.entity';
 import { OrdersService } from 'src/orders/orders.service';
+import { stringify } from 'querystring';
 var jwt = require('jsonwebtoken');
 
 
@@ -225,9 +226,9 @@ export class RiderService {
 
             if (order.status === true && request.riderResponse === 'ACCEPT' &&
                 rider) {
-                const accept = [...rider.acceptedOrders, order.data.id, order.data.user_id,
-                order.data.createdAt, order.data.recieverName, order.data.itemName];
-
+                // const accept = [...rider.acceptedOrders, order.data.id, order.data.user_id,
+                // order.data.createdAt, order.data.recieverName, order.data.itemName];
+                const accept = [...rider.acceptedOrders, order.data];
 
                 rider.acceptedOrders = accept;
                 const saveRider = await this.riderRepository.save(rider)
@@ -313,7 +314,7 @@ export class RiderService {
     }
 
 
-    async cancelOrder(req) {
+    async cancelOrder(id: string, req) {
         try {
             const tokUser = await this.authService.getLoggedInUser(req);
 
@@ -321,9 +322,18 @@ export class RiderService {
                 id: tokUser.data.id
             });
             if (rider) {
-                // for (i = 0; i < rider.acceptedOrders.length; i++) {
+                for (let i = 0; i < rider.acceptedOrders.length; i++) {
 
-                // }
+                    if (rider.acceptedOrders.values[i] === id) {
+                        rider.acceptedOrders.splice(i);
+                        await this.riderRepository.save(rider);
+                        return {
+                            status: true,
+                            message: 'you have successfully cancelled an order'
+                        }
+                    }
+
+                }
                 console.log(rider.acceptedOrders.length > 0)
                 return {
 
