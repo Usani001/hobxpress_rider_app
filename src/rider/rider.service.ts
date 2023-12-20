@@ -91,9 +91,9 @@ export class RiderService {
                         data: Filterdata,
                     },
                     process.env.DEFAULT_SECRET,
-                    { expiresIn: '24h' }
+                    //{ expiresIn: '24h' }
                 );
-                //filterout password,
+
                 return {
                     status: true,
                     token: token,
@@ -225,7 +225,7 @@ export class RiderService {
                 rider) {
 
                 const accept = [...rider.acceptedOrders, order.data.id, order.data.user_id,
-                order.data.createdAt, order.data.recieverName];
+                order.data.createdAt, order.data.recieverName, order.data.itemName];
 
 
                 rider.acceptedOrders = accept;

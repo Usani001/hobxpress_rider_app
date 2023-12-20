@@ -8,6 +8,14 @@ import { v4 as uuidv4 } from 'uuid';
 const generatedUuid = uuidv4();
 const code = generatedUuid.slice(0, 5);
 
+export enum rateRider {
+  ONE = 1,
+  TWO = 2,
+  THREE = 3,
+  FOUR = 4,
+  FIVE = 5,
+}
+
 @Entity()
 export class Rider {
   @PrimaryGeneratedColumn('uuid')
@@ -63,4 +71,10 @@ export class Rider {
 
   @Column({ default: '' })
   riders_company: string;
+
+  @Column({
+    default: 0
+  })
+
+  riderRatings?: number;
 }

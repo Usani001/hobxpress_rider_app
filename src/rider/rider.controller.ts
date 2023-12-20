@@ -6,7 +6,6 @@ import {
     Param,
     Patch,
     Post,
-    Query,
     Req,
 } from '@nestjs/common';
 import { RiderService } from './rider.service';
@@ -47,12 +46,7 @@ export class RiderController {
         return this.riderService.loginRider(request);
     }
 
-    // @Patch('forgotpassword')
-    // async resetRiderPassword(@Body() request: updateRiderDto) {
-    //     return this.riderService.resetRiderPassword(request);
-    // }
 
-    //auth guard
     @Patch('profile')
     async updateRider(@Body() request: updateRiderDto, @Req() req) {
         return this.riderService.updateRider(request, req);
