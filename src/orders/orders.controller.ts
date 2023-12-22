@@ -16,10 +16,13 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateOrderDto } from './dto/createOrder.dto';
 
 
+
 @Controller('order')
 @UseGuards(AuthGuard)
 export class OrdersController {
   constructor(private readonly orderService: OrdersService) { }
+
+
 
   @Post()
   create(@Body() body: CreateOrderDto, @Req() req) {
@@ -39,5 +42,10 @@ export class OrdersController {
   @Post('review')
   rating(@Body() body, @Req() req) {
     return this.orderService.rate(body, req);
+  }
+
+  @Post('compute-route-matrix')
+  async computeRouteMatrix(@Body() requestData: any): Promise<any> {
+    return this.orderService.computeRouteMatrix(requestData);
   }
 }

@@ -73,8 +73,24 @@ export class Rider {
   riders_company: string;
 
   @Column({
+    type: 'numeric',
+    precision: 2,
+    scale: 1,
     default: 0
   })
 
   riderRatings?: number;
+
+  @Column({
+    default: 0
+  })
+
+  totalRatings: number;
+
+
+  @Column({
+    default: 0
+  })
+
+  ratedOrder: number;
 }

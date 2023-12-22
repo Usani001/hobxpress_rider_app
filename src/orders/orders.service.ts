@@ -4,6 +4,7 @@ import { Order, orderType } from './entity/orders.entity';
 import { Repository } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { CreateOrderDto } from './dto/createOrder.dto';
+import axios from 'axios';
 
 @Injectable()
 export class OrdersService {
@@ -12,6 +13,8 @@ export class OrdersService {
     private readonly orderConnection: Repository<Order>,
     private authService: AuthService
   ) { }
+
+  private apiKey: string = 'YOUR_API_KEY';
 
   async create(body: CreateOrderDto, req) {
     try {
@@ -152,6 +155,27 @@ export class OrdersService {
         message: 'Order Found',
         data: error,
       };
+    }
+  }
+
+
+  async computeRouteMatrix(request: any): Promise<any> {
+    const url = 'https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix';
+
+    try {
+      const response = await axios.post(url, request, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': this.apiKey,
+          'X-Goog-FieldMask': 'originIndex,destinationIndex,duration,distanceMeters,status,condition',
+        },
+      });
+      console.log(response.data)
+      return response.data;
+
+    } catch (error) {
+      console.log(error.message)
+      throw new Error(`Error calling Google Distance Matrix API: ${error.message}`);
     }
   }
 

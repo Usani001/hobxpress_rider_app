@@ -67,10 +67,6 @@ export class RiderController {
         return this.riderService.acceptOrder(request, orders, req);
     }
 
-    @Get('get-nearby-rider')
-    async findNearbyRider(@Body() rider: RiderDto) {
-        return this.riderService.getNearbyRiders(rider);
-    }
 
     @Get('all')
     getOrders(@Req() req) {

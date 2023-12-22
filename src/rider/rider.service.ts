@@ -213,6 +213,38 @@ export class RiderService {
             };
         }
     }
+    async updateRatedOrders(order: Order, req) {
+        try {
+            const riderToken = await this.authService.getLoggedInUser(req);
+            const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
+            const orders = await this.orderRepository.findOneBy({ id: order.id })
+            if (order.ratings > 0) {
+                rider.ratedOrder++
+
+                const saveRider = await this.riderRepository.save(rider)
+                return {
+                    status: true,
+                    message: 'Rider Found',
+                    data: saveRider,
+                };
+            }
+            const saveRider = await this.riderRepository.save(rider)
+            return {
+                status: true,
+                message: 'Rider Found',
+                data: saveRider,
+            };
+        } catch (error) {
+            return {
+                status: false,
+                message: 'Error in Fetching Rider',
+
+            };
+        }
+    }
+
+
+
 
 
     async acceptOrder(request: RiderDto, orders: Order, req) {
@@ -220,21 +252,25 @@ export class RiderService {
             const riderToken = await this.authService.getLoggedInUser(req);
             const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
             const order = await this.orderService.changeOrderTypeToInProgress({ id: orders.id })
+
+
             if (order.status === true && request.riderResponse === 'ACCEPT' &&
                 rider) {
-
+                order.data.ratings > 0 ? rider.ratedOrder++ : rider.ratedOrder
                 const accept = [...rider.acceptedOrders, order.data];
-                rider.riderRatings += order.data.ratings;
-
+                rider.totalRatings = rider.totalRatings + order.data.ratings;
                 rider.acceptedOrders = accept;
+                rider.riderRatings = rider.totalRatings / rider.ratedOrder
+
                 const saveRider = await this.riderRepository.save(rider)
-                console.log(saveRider)
+
                 return {
                     status: true,
                     message: 'Rider has accepted order',
                     data: order.data,
-
                 }
+
+
             } else if (request.riderResponse === 'REJECT') {
                 return {
                     status: true,
@@ -256,24 +292,7 @@ export class RiderService {
 
 
     }
-    async getNearbyRiders(rider: RiderDto): Promise<Rider[]> {
-        const radius = 10; // Adjust as needed, measured in kilometers
 
-        return this.riderRepository
-            .createQueryBuilder('rider')
-            .select()
-            .addSelect(
-                `earth_distance(ll_to_earth(${rider.latitude}, ${rider.longitude}), ll_to_earth(rider.latitude, rider.longitude))`,
-                'distance',
-            )
-            .where(
-                `earth_distance(ll_to_earth(${rider.latitude}, ${rider.longitude}), ll_to_earth(rider.latitude, rider.longitude)) <= :radius`,
-                { radius },
-            )
-            .orderBy('distance', 'ASC')
-            .limit(1)
-            .getMany();
-    }
 
 
     async getAcceptedOrders(req) {
@@ -292,7 +311,10 @@ export class RiderService {
                     message: 'Orders Found',
                     data: rider.acceptedOrders,
                     numberOfAcceptedOrders: rider.acceptedOrders.length,
-                    totalRating: rider.riderRatings
+                    riderRating: rider.riderRatings,
+                    riderRatedOrders: rider.ratedOrder,
+                    totalRating: rider.totalRatings
+
 
 
                 }
