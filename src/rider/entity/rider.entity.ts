@@ -46,6 +46,12 @@ export class Rider {
   })
   acceptedOrders: Order[];
 
+  @Column({
+    type: 'json',
+    default: [],
+  })
+  completedOrders: Order[];
+
   @Column('double precision', {
     nullable: true
   })

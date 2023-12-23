@@ -59,6 +59,11 @@ export class Order {
   @Column({ default: 0 })
   ratings?: number;
 
+  @Column({
+    default: false
+  })
+  check: boolean;
+
   @Column({ default: '' })
   itemWeight: string;
 

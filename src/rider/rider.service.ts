@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { Order, orderType } from 'src/orders/entity/orders.entity';
 import { OrdersService } from 'src/orders/orders.service';
 import { stringify } from 'querystring';
+import { CreateOrderDto } from 'src/orders/dto/createOrder.dto';
 var jwt = require('jsonwebtoken');
 
 
@@ -213,37 +214,6 @@ export class RiderService {
             };
         }
     }
-    async updateRatedOrders(order: Order, req) {
-        try {
-            const riderToken = await this.authService.getLoggedInUser(req);
-            const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
-            const orders = await this.orderRepository.findOneBy({ id: order.id })
-            if (order.ratings > 0) {
-                rider.ratedOrder++
-
-                const saveRider = await this.riderRepository.save(rider)
-                return {
-                    status: true,
-                    message: 'Rider Found',
-                    data: saveRider,
-                };
-            }
-            const saveRider = await this.riderRepository.save(rider)
-            return {
-                status: true,
-                message: 'Rider Found',
-                data: saveRider,
-            };
-        } catch (error) {
-            return {
-                status: false,
-                message: 'Error in Fetching Rider',
-
-            };
-        }
-    }
-
-
 
 
 
@@ -256,12 +226,8 @@ export class RiderService {
 
             if (order.status === true && request.riderResponse === 'ACCEPT' &&
                 rider) {
-                order.data.ratings > 0 ? rider.ratedOrder++ : rider.ratedOrder
                 const accept = [...rider.acceptedOrders, order.data];
-                rider.totalRatings = rider.totalRatings + order.data.ratings;
                 rider.acceptedOrders = accept;
-                rider.riderRatings = rider.totalRatings / rider.ratedOrder
-
                 const saveRider = await this.riderRepository.save(rider)
 
                 return {
@@ -293,6 +259,80 @@ export class RiderService {
 
     }
 
+    async completeAnOrder(orders: Order, req) {
+        try {
+            const riderToken = await this.authService.getLoggedInUser(req);
+            const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
+            const order = await this.orderService.changeOrderTypeToCompleted({ id: orders.id })
+            if (order) {
+                const orderIndex = rider.acceptedOrders.findIndex(order => order.id === orders.id);
+                const accept = [...rider.completedOrders, order.data];
+                orderIndex !== -1 ? rider.completedOrders = accept : null
+                orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : null
+                const saveRider = await this.riderRepository.save(rider)
+
+                return {
+                    status: true,
+                    message: 'Rider has completed order delivery',
+                    data: order.data,
+                }
+            }
+            return {
+                status: false,
+                message: 'Rider or Order not found'
+            }
+        } catch (error) {
+            console.log(error);
+            return {
+                status: false,
+                message: 'Error in rider response',
+                data: error
+            }
+        }
+
+
+    }
+
+    async getRiderRatings(orders: Order, req) {
+        try {
+            const riderToken = await this.authService.getLoggedInUser(req);
+            const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
+            const order = await this.orderService.checkIfOrderRated({ id: orders.id })
+
+
+            if (order) {
+                order.data.ratings > 0 ? rider.ratedOrder++ : rider.ratedOrder
+                rider.totalRatings = rider.totalRatings + order.data.ratings;
+                rider.riderRatings = rider.totalRatings / rider.ratedOrder
+                const saveRider = await this.riderRepository.save(rider)
+
+                return {
+                    status: true,
+                    message: 'Rider ratings has been updated Suceessfully',
+                    riderRatings: rider.riderRatings,
+                    acceptOrders: rider.acceptedOrders.length,
+                    completedOrders: rider.completedOrders.length,
+                }
+
+            }
+            return {
+                status: false,
+                message: 'Rider has already rated with respect to this order'
+            }
+        } catch (error) {
+            console.log(error);
+            return {
+                status: false,
+                message: 'Error in rider response',
+                data: error
+            }
+        }
+
+
+    }
+
+
+
 
 
     async getAcceptedOrders(req) {
@@ -309,11 +349,9 @@ export class RiderService {
 
                     status: true,
                     message: 'Orders Found',
-                    data: rider.acceptedOrders,
-                    numberOfAcceptedOrders: rider.acceptedOrders.length,
-                    riderRating: rider.riderRatings,
-                    riderRatedOrders: rider.ratedOrder,
-                    totalRating: rider.totalRatings
+                    acceptedOrders: rider.acceptedOrders,
+                    completedOrders: rider.completedOrders,
+
 
 
 
@@ -336,50 +374,6 @@ export class RiderService {
     }
 
 
-    async cancelOrder(id: string, req) {
-        try {
-            const tokUser = await this.authService.getLoggedInUser(req);
-
-            const rider = await this.riderRepository.findOneBy({
-                id: tokUser.data.id
-            });
-            if (rider) {
-                for (let i = 0; i < rider.acceptedOrders.length; i++) {
-
-                    if (rider.acceptedOrders.values[i] === id) {
-                        rider.acceptedOrders.splice(i);
-                        await this.riderRepository.save(rider);
-                        return {
-                            status: true,
-                            message: 'you have successfully cancelled an order'
-                        }
-                    }
-
-                }
-                console.log(rider.acceptedOrders.length > 0)
-                return {
-
-                    status: true,
-                    message: 'Orders Found',
-                    data: rider.acceptedOrders,
-                    numberOfAcceptedOrders: rider.acceptedOrders.length / 5
-                }
-            }
-
-            return {
-                status: false,
-                message: 'Order or Rider Not Found',
-
-            };
-        } catch (error) {
-            console.log(error);
-            return {
-                status: false,
-                message: 'Order Not Found',
-                data: error,
-            };
-        }
-    }
 
 
 }

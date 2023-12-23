@@ -12,6 +12,7 @@ import { RiderService } from './rider.service';
 import { RiderDto } from './dtos/rider.dto';
 import { Order } from 'src/orders/entity/orders.entity';
 import { IsNotEmpty } from 'class-validator';
+import { CreateOrderDto } from 'src/orders/dto/createOrder.dto';
 
 
 export class riderLogin {
@@ -67,10 +68,20 @@ export class RiderController {
         return this.riderService.acceptOrder(request, orders, req);
     }
 
+    @Post('order-complete')
+    async completeOrder(@Body() orders: Order, @Req() req) {
+        return this.riderService.completeAnOrder(orders, req);
+    }
+
 
     @Get('all')
     getOrders(@Req() req) {
         return this.riderService.getAcceptedOrders(req);
+    }
+
+    @Post('rider-info')
+    updateRiderRatings(@Body() orders: Order, @Req() req) {
+        return this.riderService.getRiderRatings(orders, req);
     }
 
 }

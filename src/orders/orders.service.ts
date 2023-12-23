@@ -61,8 +61,6 @@ export class OrdersService {
         id: body.id
       },
       );
-      getOrder.type = orderType.ACTIVE
-      const newOrder = await this.orderConnection.save(getOrder);
       return {
         status: true,
         message: 'Order Found',
@@ -108,6 +106,8 @@ export class OrdersService {
     }
   }
 
+
+
   async changeOrderTypeToCompleted(body) {
     try {
 
@@ -115,14 +115,42 @@ export class OrdersService {
         id: body.id
       },
       );
-      getOrder.type = orderType.COMPLETED
-      const newOrder = await this.orderConnection.save(getOrder);
+      if (getOrder.type === orderType.INPROGRESS) {
+        getOrder.type = orderType.COMPLETED
+        const newOrder = await this.orderConnection.save(getOrder);
 
+        return {
+          status: true,
+          message: 'Order Found',
+          data: newOrder,
+        }
+      }
+    } catch (error) {
       return {
-        status: true,
-        message: 'Order Found',
-        data: newOrder,
+        status: false,
+        message: 'Order Not Found',
+        data: error,
       };
+    }
+  }
+
+  async checkIfOrderRated(body) {
+    try {
+
+      const getOrder = await this.orderConnection.findOneBy({
+        id: body.id
+      },
+      );
+      if (getOrder.check === false) {
+        getOrder.check = true
+        const newOrder = await this.orderConnection.save(getOrder);
+
+        return {
+          status: true,
+          message: 'Order Found',
+          data: newOrder,
+        }
+      }
     } catch (error) {
       return {
         status: false,
@@ -138,12 +166,14 @@ export class OrdersService {
       const getOrder = await this.orderConnection.findOne({
         where: { id: body.id },
       });
+
       if (body.rating) {
         getOrder.ratings = body.rating;
       }
       if (body.comment) {
         getOrder.comments = body.comment;
       }
+
       await this.orderConnection.save(getOrder);
       return {
         status: true,
@@ -159,8 +189,58 @@ export class OrdersService {
   }
 
 
-  async computeRouteMatrix(request: any): Promise<any> {
+  async computeRouteMatrix(order: CreateOrderDto): Promise<any> {
     const url = 'https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix';
+    const request = {
+      "origins": [
+        {
+          "waypoint": {
+            "location": {
+              "latLng": {
+                "latitude": order.latitude,
+                "longitude": order.longitude
+              }
+            }
+          },
+          "routeModifiers": { "avoid_ferries": true }
+        },
+        {
+          "waypoint": {
+            "location": {
+              "latLng": {
+                "latitude": order.latitude,
+                "longitude": order.longitude
+              }
+            }
+          },
+          "routeModifiers": { "avoid_ferries": true }
+        }
+      ],
+      "destinations": [
+        {
+          "waypoint": {
+            "location": {
+              "latLng": {
+                "latitude": order.latitude,
+                "longitude": order.longitude
+              }
+            }
+          }
+        },
+        {
+          "waypoint": {
+            "location": {
+              "latLng": {
+                "latitude": order.latitude,
+                "longitude": order.longitude
+              }
+            }
+          }
+        }
+      ],
+      "travelMode": "DRIVE",
+      "routingPreference": "TRAFFIC_AWARE"
+    };
 
     try {
       const response = await axios.post(url, request, {
