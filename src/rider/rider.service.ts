@@ -221,19 +221,23 @@ export class RiderService {
         try {
             const riderToken = await this.authService.getLoggedInUser(req);
             const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
-            const order = await this.orderService.changeOrderTypeToInProgress({ id: orders.id })
+            const order = await this.orderRepository.findOneBy({ id: orders.id })
 
 
-            if (order.status === true && request.riderResponse === 'ACCEPT' &&
+            if (order.type === orderType.ACTIVE && request.riderResponse === 'ACCEPT' &&
                 rider) {
-                const accept = [...rider.acceptedOrders, order.data];
+                order.type = orderType.INPROGRESS
+
+                const accept = [order, ...rider.acceptedOrders];
+                order.rider_id = rider.id
                 rider.acceptedOrders = accept;
+                const saveOrder = await this.orderRepository.save(order)
                 const saveRider = await this.riderRepository.save(rider)
 
                 return {
                     status: true,
                     message: 'Rider has accepted order',
-                    data: order.data,
+                    data: order,
                 }
 
 
@@ -266,7 +270,7 @@ export class RiderService {
             const order = await this.orderService.changeOrderTypeToCompleted({ id: orders.id })
             if (order) {
                 const orderIndex = rider.acceptedOrders.findIndex(order => order.id === orders.id);
-                const accept = [...rider.completedOrders, order.data];
+                const accept = [order.data, ...rider.completedOrders];
                 orderIndex !== -1 ? rider.completedOrders = accept : null
                 orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : null
                 const saveRider = await this.riderRepository.save(rider)
@@ -310,14 +314,14 @@ export class RiderService {
                     status: true,
                     message: 'Rider ratings has been updated Suceessfully',
                     riderRatings: rider.riderRatings,
-                    acceptOrders: rider.acceptedOrders.length,
-                    completedOrders: rider.completedOrders.length,
+                    numberOfAcceptOrders: rider.acceptedOrders.length,
+                    numberOfCompletedOrders: rider.completedOrders.length,
                 }
 
             }
             return {
                 status: false,
-                message: 'Rider has already rated with respect to this order'
+                message: 'Rider has already been rated with respect to this order'
             }
         } catch (error) {
             console.log(error);
@@ -343,14 +347,18 @@ export class RiderService {
                 id: tokUser.data.id
             });
 
+
             if (rider.acceptedOrders.length >= 0) {
                 console.log(rider)
                 return {
 
                     status: true,
                     message: 'Orders Found',
+                    numberOfAcceptOrders: rider.acceptedOrders.length,
+                    numberOfCompletedOrders: rider.completedOrders.length,
                     acceptedOrders: rider.acceptedOrders,
                     completedOrders: rider.completedOrders,
+
 
 
 

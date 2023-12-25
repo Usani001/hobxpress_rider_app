@@ -23,6 +23,9 @@ export class Order {
   @Column()
   user_id: string;
 
+  @Column({ nullable: true })
+  rider_id: string;
+
   @Column({ default: '' })
   pickup_add: string;
 
@@ -90,6 +93,5 @@ export class Order {
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
 
-  @ManyToOne(() => Rider, (rider) => rider.order)
-  rider: Rider;
+
 }

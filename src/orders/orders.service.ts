@@ -6,15 +6,17 @@ import { AuthService } from 'src/auth/auth.service';
 import { CreateOrderDto } from './dto/createOrder.dto';
 import axios from 'axios';
 
+
 @Injectable()
 export class OrdersService {
   constructor(
     @InjectRepository(Order)
     private readonly orderConnection: Repository<Order>,
-    private authService: AuthService
+    private authService: AuthService,
   ) { }
 
-  private apiKey: string = 'YOUR_API_KEY';
+  private apiKey: string = process.env.APIKEY;
+  private amountPerKm: any = process.env.AMOUNTPERKM;
 
   async create(body: CreateOrderDto, req) {
     try {
@@ -48,7 +50,7 @@ export class OrdersService {
     } catch (error) {
       return {
         status: false,
-        message: 'Order Found',
+        message: 'Orders not Found',
         data: error,
       };
     }
@@ -82,7 +84,7 @@ export class OrdersService {
         id: body.id
       },
       );
-      if (getOrder.type === orderType.ACTIVE) {
+      if (getOrder) {
         getOrder.type = orderType.INPROGRESS
         const newOrder = await this.orderConnection.save(getOrder);
 
@@ -189,74 +191,25 @@ export class OrdersService {
   }
 
 
-  async computeRouteMatrix(order: CreateOrderDto): Promise<any> {
-    const url = 'https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix';
-    const request = {
-      "origins": [
-        {
-          "waypoint": {
-            "location": {
-              "latLng": {
-                "latitude": order.latitude,
-                "longitude": order.longitude
-              }
-            }
-          },
-          "routeModifiers": { "avoid_ferries": true }
-        },
-        {
-          "waypoint": {
-            "location": {
-              "latLng": {
-                "latitude": order.latitude,
-                "longitude": order.longitude
-              }
-            }
-          },
-          "routeModifiers": { "avoid_ferries": true }
-        }
-      ],
-      "destinations": [
-        {
-          "waypoint": {
-            "location": {
-              "latLng": {
-                "latitude": order.latitude,
-                "longitude": order.longitude
-              }
-            }
-          }
-        },
-        {
-          "waypoint": {
-            "location": {
-              "latLng": {
-                "latitude": order.latitude,
-                "longitude": order.longitude
-              }
-            }
-          }
-        }
-      ],
-      "travelMode": "DRIVE",
-      "routingPreference": "TRAFFIC_AWARE"
-    };
-
+  async computeRouteMatrix(request: CreateOrderDto): Promise<any> {
+    const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${request.pickup_add};${request.delivery_add}?approaches=curb;curb&access_token=${this.apiKey}`;
     try {
-      const response = await axios.post(url, request, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Goog-Api-Key': this.apiKey,
-          'X-Goog-FieldMask': 'originIndex,destinationIndex,duration,distanceMeters,status,condition',
-        },
-      });
+      const response = await axios.get(url);
       console.log(response.data)
-      return response.data;
+      const distanceInKm = response.data.destinations[1].distance / 1000;
+      const amountCharged = distanceInKm * this.amountPerKm
+      return {
+        status: true,
+        message: 'Details returned',
+        distance: distanceInKm,
+        amount: amountCharged
+      }
 
     } catch (error) {
       console.log(error.message)
       throw new Error(`Error calling Google Distance Matrix API: ${error.message}`);
     }
   }
+
 
 }

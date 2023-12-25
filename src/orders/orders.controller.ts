@@ -3,18 +3,12 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
   Req,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateOrderDto } from './dto/createOrder.dto';
-
 
 
 @Controller('order')
@@ -44,8 +38,8 @@ export class OrdersController {
     return this.orderService.rate(body, req);
   }
 
-  @Post('compute-route-matrix')
-  async computeRouteMatrix(@Body() requestData: any): Promise<any> {
-    return this.orderService.computeRouteMatrix(requestData);
+  @Get('compute-route-matrix')
+  async computeRouteMatrix(@Body() request: CreateOrderDto): Promise<any> {
+    return this.orderService.computeRouteMatrix(request);
   }
 }
