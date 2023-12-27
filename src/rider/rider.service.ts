@@ -10,6 +10,7 @@ import { Order, orderType } from 'src/orders/entity/orders.entity';
 import { OrdersService } from 'src/orders/orders.service';
 import { stringify } from 'querystring';
 import { CreateOrderDto } from 'src/orders/dto/createOrder.dto';
+import axios from 'axios';
 var jwt = require('jsonwebtoken');
 
 
@@ -25,6 +26,8 @@ export class RiderService {
         private readonly orderRepository: Repository<Order>,
         private readonly orderService: OrdersService,
     ) { }
+
+    private apiKey: string = process.env.APIKEY;
 
     async createRider(createRiderDto: riderLogin) {
         try {
@@ -146,23 +149,6 @@ export class RiderService {
         }
     }
 
-    //update password , forgot passwod, set password to randomstring, send randstring to email
-    // async resetRiderPassword(body: updateRiderDto) {
-    //     try {
-    //         const getRider = await this.riderRepository.findOne({
-    //             where: { email: body.email },
-    //         });
-    //         const randomPass = await this.authService.generateRandomString(10);
-    //         //send to user email
-    //         console.log(randomPass);
-    //         const password = await this.authService.encrypt(randomPass);
-    //         getRider.password = password;
-    //         await this.riderRepository.save(getRider);
-    //         return { status: true, message: 'New password sent' };
-    //     } catch (error) {
-    //         return { status: false, message: error };
-    //     }
-    // }
 
     async removeRider(id: string, req) {
         try {
@@ -270,16 +256,17 @@ export class RiderService {
             const order = await this.orderRepository.findOneBy({ id: orders.id });
             if (order && rider) {
                 const orderIndex = rider.acceptedOrders.findIndex(order => order.id === orders.id);
-
+                order.type = orderType.COMPLETED
                 const accept = [order, ...rider.completedOrders];
                 orderIndex !== -1 ? rider.completedOrders = accept : rider.completedOrders
-                orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : rider.completedOrders
+                orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : rider.completedOrders;
+                const saveOrder = await this.orderRepository.save(order)
                 const saveRider = await this.riderRepository.save(rider)
 
                 return {
                     status: true,
                     message: 'Rider has completed order delivery',
-                    data: order,
+                    data: saveOrder,
                 }
             }
             return {
@@ -364,6 +351,7 @@ export class RiderService {
     async getActiveOrders(req) {
         const tokUser = await this.authService.getLoggedInUser(req);
         const rider = await this.riderRepository.findOneBy({ id: tokUser.data.id })
+
         try {
             if (rider) {
                 const radius = 5000;
@@ -377,7 +365,19 @@ export class RiderService {
                     .orderBy('distance', 'ASC')
                     .limit(5)
                     .getMany();
-                const activeOrders = orders.filter(order => order.type === orderType.ACTIVE)
+                const riderLocation = `${rider.longitude},${rider.latitude}`
+
+                for (const order of orders) {
+                    if (order.type === orderType.ACTIVE) {
+                        const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${riderLocation};${order.geo_pickup}?approaches=curb;curb&access_token=${this.apiKey}`;
+                        const response = await axios.get(url);
+                        const distanceInKm = response.data.destinations[1].distance / 1000;
+                        order.riderDistance = distanceInKm.toFixed(2)
+                        await this.orderRepository.save(order);
+                    }
+
+                }
+                const activeOrders = orders.filter(order => order.type === orderType.ACTIVE);
                 if (activeOrders.length > 0) {
                     return {
                         status: true,
@@ -386,6 +386,8 @@ export class RiderService {
                         data: activeOrders,
                     };
                 }
+
+
                 return {
                     status: false,
                     message: 'No active orders found'

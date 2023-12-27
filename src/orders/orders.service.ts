@@ -25,15 +25,12 @@ export class OrdersService {
       const response = await axios.get(url);
       const distanceInKm = response.data.destinations[1].distance / 1000;
       const amountCharged = distanceInKm * this.amountPerKm;
-
       const roundedAmountCharged = Math.round(amountCharged);
-      const roundedDistanceInKm = Math.round(distanceInKm);
-
       return {
         status: true,
         message: 'Returned order cost and distance',
-        orderCost: roundedAmountCharged,
-        orderDistance: roundedDistanceInKm,
+        orderCost: roundedAmountCharged.toLocaleString(),
+        orderDistance: distanceInKm.toFixed(2),
       }
     } catch (error) {
       console.log(error)
@@ -54,9 +51,11 @@ export class OrdersService {
       const response = await axios.get(url);
       const distanceInKm = response.data.destinations[1].distance / 1000;
       const amountCharged = distanceInKm * this.amountPerKm;
+      const roundedAmountCharged = Math.round(amountCharged);
+      const formattedAmountCharged = roundedAmountCharged.toLocaleString();
       body['user_id'] = tokUser.data.id;
-      body['order_cost'] = amountCharged;
-      body['distance'] = distanceInKm;
+      body['order_cost'] = formattedAmountCharged;
+      body['distance'] = distanceInKm.toFixed(2);
 
       const saveOrder = await this.orderConnection.save(body);
       console.log(saveOrder)

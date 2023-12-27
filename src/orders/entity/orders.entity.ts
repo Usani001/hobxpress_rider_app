@@ -37,27 +37,22 @@ export class Order {
   geo_delivery: string;
 
   @Column({
-    type: 'numeric',
-    precision: 10,
-    scale: 0,
-    default: 0
+    type: 'text',
+    default: ''
   })
-  order_cost: number;
+  order_cost: string;
 
   @Column({
-    type: 'numeric',
-    precision: 10,
-    scale: 0,
-    default: 0
+    type: 'text',
+    default: ''
   })
+  distance: string;
 
   @Column({
-    type: 'numeric',
-    precision: 10,
-    scale: 0,
-    default: 0
+    type: 'text',
+    default: ''
   })
-  riderDistance: number;
+  riderDistance: string;
 
   @Column({ default: null })
   pickup_schedule_date?: string;
