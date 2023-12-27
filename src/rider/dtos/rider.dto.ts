@@ -4,7 +4,6 @@ import { Rider } from '../entity/rider.entity';
 
 export class RiderDto extends OmitType(Rider, [
   'id',
-  'otp_token',
   'deletedAt',
 ] as const) {
 

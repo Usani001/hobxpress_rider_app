@@ -9,6 +9,8 @@ import {
 import { OrdersService } from './orders.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateOrderDto } from './dto/createOrder.dto';
+import { Order } from './entity/orders.entity';
+import { Rider } from 'src/rider/entity/rider.entity';
 
 
 @Controller('order')
@@ -38,8 +40,8 @@ export class OrdersController {
     return this.orderService.rate(body, req);
   }
 
-  @Get('compute-route-matrix')
-  async computeRouteMatrix(@Body() request: CreateOrderDto): Promise<any> {
-    return this.orderService.computeRouteMatrix(request);
+  @Get('order-cost')
+  orderCost(@Body() body: CreateOrderDto, @Req() req) {
+    return this.orderService.orderCost(body, req);
   }
 }

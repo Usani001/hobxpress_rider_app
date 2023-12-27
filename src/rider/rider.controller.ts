@@ -13,6 +13,7 @@ import { RiderDto } from './dtos/rider.dto';
 import { Order } from 'src/orders/entity/orders.entity';
 import { IsNotEmpty } from 'class-validator';
 import { CreateOrderDto } from 'src/orders/dto/createOrder.dto';
+import { Rider } from './entity/rider.entity';
 
 
 export class riderLogin {
@@ -79,11 +80,17 @@ export class RiderController {
         return this.riderService.getAcceptedOrders(req);
     }
 
-    @Post('rider-info')
-    updateRiderRatings(@Body() orders: Order, @Req() req) {
-        return this.riderService.getRiderRatings(orders, req);
+
+    @Post('location-update')
+    updateLocation(@Body() request: Rider, @Req() req) {
+        return this.riderService.liveLocation(request, req);
     }
 
+
+    @Post('active-orders')
+    activeOrders(@Req() req) {
+        return this.riderService.getActiveOrders(req);
+    }
 }
 
 

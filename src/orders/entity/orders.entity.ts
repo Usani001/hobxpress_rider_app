@@ -1,9 +1,7 @@
-import { Rider } from 'src/rider/entity/rider.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
   CreateDateColumn,
   DeleteDateColumn,
 } from 'typeorm';
@@ -23,20 +21,49 @@ export class Order {
   @Column()
   user_id: string;
 
-  @Column({ nullable: true })
+  @Column({ default: '', nullable: true })
   rider_id: string;
 
   @Column({ default: '' })
   pickup_add: string;
+
+  @Column({ default: '' })
+  delivery_add: string;
+
+  @Column({ default: '' })
+  geo_pickup: string;
+
+  @Column({ default: '' })
+  geo_delivery: string;
+
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 0,
+    default: 0
+  })
+  order_cost: number;
+
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 0,
+    default: 0
+  })
+
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 0,
+    default: 0
+  })
+  riderDistance: number;
 
   @Column({ default: null })
   pickup_schedule_date?: string;
 
   @Column({ default: null })
   pickup_schedule_time?: string;
-
-  @Column({ default: '' })
-  delivery_add: string;
 
   @Column({ default: '' })
   recieverName: string;
@@ -65,7 +92,7 @@ export class Order {
   @Column({
     default: false
   })
-  check: boolean;
+  rated: boolean;
 
   @Column({ default: '' })
   itemWeight: string;
@@ -82,13 +109,11 @@ export class Order {
   @CreateDateColumn({ nullable: true })
   createdAt: Date;
 
-  @Column('double precision', { nullable: true })
-  latitude: number;
+  @Column('double precision', { default: 0 })
+  pickupLatitude: number;
 
-  @Column('double precision', { nullable: true })
-  longitude: number;
-
-
+  @Column('double precision', { default: 0 })
+  pickupLongitude: number;
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;

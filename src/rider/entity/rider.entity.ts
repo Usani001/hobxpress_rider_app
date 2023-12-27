@@ -33,9 +33,6 @@ export class Rider {
   @Column({ default: '' })
   last_name: string;
 
-  @Column({ default: 0 })
-  otp_token: number;
-
 
   @Column({ type: 'text', array: true, default: [] })
   notifications: string[];
@@ -51,6 +48,7 @@ export class Rider {
     default: [],
   })
   completedOrders: Order[];
+
 
   @Column('double precision', {
     nullable: true

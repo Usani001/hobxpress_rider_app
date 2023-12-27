@@ -7,4 +7,4 @@ export class CreateOrderDto extends OmitType(Order, [
   'user_id',
   'createdAt',
   'deletedAt',
-] as const) {}
+] as const) { }

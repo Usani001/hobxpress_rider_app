@@ -151,38 +151,7 @@ export class AuthService {
     }
   }
 
-  // async verifyRiderOTP(data: autheoObj) {
-  //   try {
-  //     const rider = await this.riderConnection.findOne({
-  //       where: { email: data.email },
-  //     });
-  //     if (rider && rider.otp_token === data.otp) {
-  //       return {
-  //         status: true,
-  //         message: 'OTP is valid',
-  //       };
-  //     } else {
-  //       return {
-  //         status: false,
-  //         message: 'Invalid OTP',
-  //       };
-  //     }
-  //   } catch (error) {
-  //     return {
-  //       status: false,
-  //       data: error,
-  //     };
-  //   }
-  // }
 
-  //   generateOtp() {
-  //     var digits = '0123456789';
-  //     let OTP = '';
-  //     for (let i = 0; i < 4; i++) {
-  //       OTP += digits[Math.floor(Math.random() * 10)];
-  //     }
-  //     return OTP;
-  //   }
 
   generateOtp2(secret: string, email: string) {
     const otp = speakeasy.totp({
@@ -205,11 +174,6 @@ export class AuthService {
     return randomString;
   }
 
-  // verifyOtp(secret: string, enteredOtp: string, email: string): boolean {
-  //   const otp = this.generateOtp2(secret, email);
-  //   console.log(otp);
-  //   return otp === enteredOtp;
-  // }
 
   async extractUserFromToken(token) {
     const decoded = jwt.verify(token, process.env.DEFAULT_SECRET);
@@ -222,9 +186,6 @@ export class AuthService {
       7,
       request.headers.authorization.length
     );
-    // console.log({
-    //   data: token,
-    // });
     return token;
   }
 

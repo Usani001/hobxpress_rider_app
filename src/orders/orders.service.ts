@@ -18,17 +18,58 @@ export class OrdersService {
   private apiKey: string = process.env.APIKEY;
   private amountPerKm: any = process.env.AMOUNTPERKM;
 
-  async create(body: CreateOrderDto, req) {
+  async orderCost(body: CreateOrderDto, req) {
     try {
       const tokUser = await this.authService.getLoggedInUser(req);
+      const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${body.geo_pickup};${body.geo_delivery}?approaches=curb;curb&access_token=${this.apiKey}`;
+      const response = await axios.get(url);
+      const distanceInKm = response.data.destinations[1].distance / 1000;
+      const amountCharged = distanceInKm * this.amountPerKm;
+
+      const roundedAmountCharged = Math.round(amountCharged);
+      const roundedDistanceInKm = Math.round(distanceInKm);
+
+      return {
+        status: true,
+        message: 'Returned order cost and distance',
+        orderCost: roundedAmountCharged,
+        orderDistance: roundedDistanceInKm,
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        status: false,
+        message: 'Error in fetching order cost and order distance',
+      }
+    }
+
+
+  }
+  async create(body: CreateOrderDto, req) {
+    const tokUser = await this.authService.getLoggedInUser(req);
+    const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${body.geo_pickup};${body.geo_delivery}?approaches=curb;curb&access_token=${this.apiKey}`;
+
+    try {
+
+      const response = await axios.get(url);
+      const distanceInKm = response.data.destinations[1].distance / 1000;
+      const amountCharged = distanceInKm * this.amountPerKm;
       body['user_id'] = tokUser.data.id;
+      body['order_cost'] = amountCharged;
+      body['distance'] = distanceInKm;
+
       const saveOrder = await this.orderConnection.save(body);
-      console.log(saveOrder);
+      console.log(saveOrder)
+
+      console.log(response.data.destinations)
+      console.log('Distance: ' + distanceInKm, 'Amount: ' + amountCharged);
       return {
         status: true,
         message: 'Order Created',
       };
+
     } catch (error) {
+      console.log(error)
       return {
         status: false,
         message: 'Error',
@@ -77,90 +118,8 @@ export class OrdersService {
     }
   }
 
-  async changeOrderTypeToInProgress(body) {
-    try {
-
-      const getOrder = await this.orderConnection.findOneBy({
-        id: body.id
-      },
-      );
-      if (getOrder) {
-        getOrder.type = orderType.INPROGRESS
-        const newOrder = await this.orderConnection.save(getOrder);
-
-        return {
-          status: true,
-          message: 'Order Found',
-          data: getOrder,
-        };
-      }
-      return {
-        status: false,
-        message: 'Order Not found or has been accepted',
-
-      }
-    } catch (error) {
-      return {
-        status: false,
-        message: 'Order Not Found',
-        data: error,
-      };
-    }
-  }
 
 
-
-  async changeOrderTypeToCompleted(body) {
-    try {
-
-      const getOrder = await this.orderConnection.findOneBy({
-        id: body.id
-      },
-      );
-      if (getOrder.type === orderType.INPROGRESS) {
-        getOrder.type = orderType.COMPLETED
-        const newOrder = await this.orderConnection.save(getOrder);
-
-        return {
-          status: true,
-          message: 'Order Found',
-          data: newOrder,
-        }
-      }
-    } catch (error) {
-      return {
-        status: false,
-        message: 'Order Not Found',
-        data: error,
-      };
-    }
-  }
-
-  async checkIfOrderRated(body) {
-    try {
-
-      const getOrder = await this.orderConnection.findOneBy({
-        id: body.id
-      },
-      );
-      if (getOrder.check === false) {
-        getOrder.check = true
-        const newOrder = await this.orderConnection.save(getOrder);
-
-        return {
-          status: true,
-          message: 'Order Found',
-          data: newOrder,
-        }
-      }
-    } catch (error) {
-      return {
-        status: false,
-        message: 'Order Not Found',
-        data: error,
-      };
-    }
-  }
 
 
   async rate(body, req) {
@@ -189,27 +148,5 @@ export class OrdersService {
       };
     }
   }
-
-
-  async computeRouteMatrix(request: CreateOrderDto): Promise<any> {
-    const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${request.pickup_add};${request.delivery_add}?approaches=curb;curb&access_token=${this.apiKey}`;
-    try {
-      const response = await axios.get(url);
-      console.log(response.data)
-      const distanceInKm = response.data.destinations[1].distance / 1000;
-      const amountCharged = distanceInKm * this.amountPerKm
-      return {
-        status: true,
-        message: 'Details returned',
-        distance: distanceInKm,
-        amount: amountCharged
-      }
-
-    } catch (error) {
-      console.log(error.message)
-      throw new Error(`Error calling Google Distance Matrix API: ${error.message}`);
-    }
-  }
-
 
 }

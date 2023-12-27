@@ -227,7 +227,7 @@ export class RiderService {
             if (order.type === orderType.ACTIVE && request.riderResponse === 'ACCEPT' &&
                 rider) {
                 order.type = orderType.INPROGRESS
-
+                order.rider_id = rider.id
                 const accept = [order, ...rider.acceptedOrders];
                 order.rider_id = rider.id
                 rider.acceptedOrders = accept;
@@ -266,19 +266,20 @@ export class RiderService {
     async completeAnOrder(orders: Order, req) {
         try {
             const riderToken = await this.authService.getLoggedInUser(req);
-            const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
-            const order = await this.orderService.changeOrderTypeToCompleted({ id: orders.id })
-            if (order) {
+            const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id });
+            const order = await this.orderRepository.findOneBy({ id: orders.id });
+            if (order && rider) {
                 const orderIndex = rider.acceptedOrders.findIndex(order => order.id === orders.id);
-                const accept = [order.data, ...rider.completedOrders];
-                orderIndex !== -1 ? rider.completedOrders = accept : null
-                orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : null
+
+                const accept = [order, ...rider.completedOrders];
+                orderIndex !== -1 ? rider.completedOrders = accept : rider.completedOrders
+                orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : rider.completedOrders
                 const saveRider = await this.riderRepository.save(rider)
 
                 return {
                     status: true,
                     message: 'Rider has completed order delivery',
-                    data: order.data,
+                    data: order,
                 }
             }
             return {
@@ -296,48 +297,6 @@ export class RiderService {
 
 
     }
-
-    async getRiderRatings(orders: Order, req) {
-        try {
-            const riderToken = await this.authService.getLoggedInUser(req);
-            const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
-            const order = await this.orderService.checkIfOrderRated({ id: orders.id })
-
-
-            if (order) {
-                order.data.ratings > 0 ? rider.ratedOrder++ : rider.ratedOrder
-                rider.totalRatings = rider.totalRatings + order.data.ratings;
-                rider.riderRatings = rider.totalRatings / rider.ratedOrder
-                const saveRider = await this.riderRepository.save(rider)
-
-                return {
-                    status: true,
-                    message: 'Rider ratings has been updated Suceessfully',
-                    riderRatings: rider.riderRatings,
-                    numberOfAcceptOrders: rider.acceptedOrders.length,
-                    numberOfCompletedOrders: rider.completedOrders.length,
-                }
-
-            }
-            return {
-                status: false,
-                message: 'Rider has already been rated with respect to this order'
-            }
-        } catch (error) {
-            console.log(error);
-            return {
-                status: false,
-                message: 'Error in rider response',
-                data: error
-            }
-        }
-
-
-    }
-
-
-
-
 
     async getAcceptedOrders(req) {
         try {
@@ -358,11 +317,6 @@ export class RiderService {
                     numberOfCompletedOrders: rider.completedOrders.length,
                     acceptedOrders: rider.acceptedOrders,
                     completedOrders: rider.completedOrders,
-
-
-
-
-
                 }
             }
 
@@ -382,7 +336,71 @@ export class RiderService {
     }
 
 
+    async liveLocation(request: Rider, req) {
+        const tokUser = await this.authService.getLoggedInUser(req);
+        const rider = await this.riderRepository.findOneBy({
+            id: tokUser.data.id
+        });
+        try {
+            if (rider) {
+                rider.latitude = request.latitude;
+                rider.longitude = request.longitude;
+                await this.riderRepository.save(rider);
+                return {
+                    status: true,
+                    message: 'Riders location has been updated successfully',
+                    data1: 'Latitude: ' + rider.latitude + '  ' + 'Longitude: ' + rider.longitude,
+                }
+            }
+            return {
+                status: false,
+                message: 'Error in finding Rider',
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
+    async getActiveOrders(req) {
+        const tokUser = await this.authService.getLoggedInUser(req);
+        const rider = await this.riderRepository.findOneBy({ id: tokUser.data.id })
+        try {
+            if (rider) {
+                const radius = 5000;
+                const orders = await this.orderRepository
+                    .createQueryBuilder('order')
+                    .select()
+                    .addSelect(`earth_distance(ll_to_earth(${rider.latitude},${rider.longitude}), ll_to_earth(order.pickupLatitude, order.pickupLongitude))`,
+                        'distance',)
+                    .where(`earth_distance(ll_to_earth(${rider.latitude},${rider.longitude}), ll_to_earth(order.pickupLatitude, order.pickupLongitude)) <= ${radius} `
+                    )
+                    .orderBy('distance', 'ASC')
+                    .limit(5)
+                    .getMany();
+                const activeOrders = orders.filter(order => order.type === orderType.ACTIVE)
+                if (activeOrders.length > 0) {
+                    return {
+                        status: true,
+                        message: 'Active Orders Fetched',
+                        numberOfActiveOrders: activeOrders.length,
+                        data: activeOrders,
+                    };
+                }
+                return {
+                    status: false,
+                    message: 'No active orders found'
+                };
+            }
+            return {
+                status: false,
+                message: 'Rider not found'
+            };
+        } catch (error) {
+            console.log(error)
+            return error
+        }
+
+    }
 
 }
 
