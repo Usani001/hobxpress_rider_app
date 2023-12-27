@@ -254,7 +254,7 @@ export class RiderService {
             const riderToken = await this.authService.getLoggedInUser(req);
             const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id });
             const order = await this.orderRepository.findOneBy({ id: orders.id });
-            if (order && rider) {
+            if (order.type === orderType.INPROGRESS && rider) {
                 const orderIndex = rider.acceptedOrders.findIndex(order => order.id === orders.id);
                 order.type = orderType.COMPLETED
                 const accept = [order, ...rider.completedOrders];
