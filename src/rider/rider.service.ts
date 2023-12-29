@@ -2,21 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { RiderDto } from './dtos/rider.dto';
 import { Rider } from './entity/rider.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Timestamp } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { riderLogin, updateRiderDto } from './rider.controller';
-import * as bcrypt from 'bcrypt';
 import { Order, orderType } from 'src/orders/entity/orders.entity';
-import { OrdersService } from 'src/orders/orders.service';
-import { stringify } from 'querystring';
-import { CreateOrderDto } from 'src/orders/dto/createOrder.dto';
 import axios from 'axios';
+import { User } from 'src/users/entity/user.entity';
 var jwt = require('jsonwebtoken');
 
 
 
 @Injectable()
 export class RiderService {
+    dateFormatter: Intl.DateTimeFormat;
+    timeFormatter: Intl.DateTimeFormat;
 
     constructor(
         @InjectRepository(Rider)
@@ -24,10 +23,22 @@ export class RiderService {
         private authService: AuthService,
         @InjectRepository(Order)
         private readonly orderRepository: Repository<Order>,
-        private readonly orderService: OrdersService,
-    ) { }
+        @InjectRepository(User)
+        private readonly userRepository: Repository<User>,
+
+    ) {
+        this.dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'numeric', day: '2-digit', year: 'numeric' });
+        this.timeFormatter = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    }
+    getFormattedDateTime(): string {
+        const date = new Date();
+        const formattedDate = this.dateFormatter.format(date);
+        const formattedTime = this.timeFormatter.format(date);
+        return `${formattedDate}|${formattedTime}`;
+    }
 
     private apiKey: string = process.env.APIKEY;
+
 
     async createRider(createRiderDto: riderLogin) {
         try {
@@ -132,9 +143,6 @@ export class RiderService {
             if (body.last_name) {
                 getRider.last_name = body.last_name;
             }
-            // if (body.email) {
-            //     getRider.email = body.email;
-            // }
 
             await this.riderRepository.save(getRider);
             return {
@@ -209,7 +217,6 @@ export class RiderService {
             const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
             const order = await this.orderRepository.findOneBy({ id: orders.id })
 
-
             if (order.type === orderType.ACTIVE && request.riderResponse === 'ACCEPT' &&
                 rider) {
                 order.type = orderType.INPROGRESS
@@ -217,13 +224,18 @@ export class RiderService {
                 const accept = [order, ...rider.acceptedOrders];
                 order.rider_id = rider.id
                 rider.acceptedOrders = accept;
-                const saveOrder = await this.orderRepository.save(order)
-                const saveRider = await this.riderRepository.save(rider)
+                const saveOrder = await this.orderRepository.save(order);
+                const saveRider = await this.riderRepository.save(rider);
+                const user = await this.userRepository.findOneBy({ id: order.user_id })
+                const notification = `Your item has been assigned to a rider ${this.getFormattedDateTime()}`;
+                const userNotification = [notification, ...user.notifications]
+                user.notifications = userNotification
+                const saveUser = await this.userRepository.save(user)
 
                 return {
                     status: true,
                     message: 'Rider has accepted order',
-                    data: order,
+                    data: saveOrder,
                 }
 
 
@@ -262,6 +274,11 @@ export class RiderService {
                 orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : rider.completedOrders;
                 const saveOrder = await this.orderRepository.save(order)
                 const saveRider = await this.riderRepository.save(rider)
+                const user = await this.userRepository.findOneBy({ id: order.user_id })
+                const notification = `Your item has been delivered successfully ${this.getFormattedDateTime()}`;
+                const userNotification = [notification, ...user.notifications]
+                user.notifications = userNotification
+                const saveUser = await this.userRepository.save(user)
 
                 return {
                     status: true,
@@ -285,24 +302,57 @@ export class RiderService {
 
     }
 
+
+    
     async getAcceptedOrders(req) {
+
         try {
             const tokUser = await this.authService.getLoggedInUser(req);
 
             const rider = await this.riderRepository.findOneBy({
                 id: tokUser.data.id
             });
-
-
             if (rider.acceptedOrders.length >= 0) {
+                console.log(rider.acceptedOrders);
+                return {
+
+                    status: true,
+                    message: 'Orders Found',
+                    numberOfAcceptedOrders: rider.acceptedOrders.length,
+                    acceptedOrders: rider.acceptedOrders,
+                }
+            }
+            return {
+                status: false,
+                message: 'Order or Rider Not Found',
+
+            };
+        } catch (error) {
+            console.log(error);
+            return {
+                status: false,
+                message: 'Order Not Found',
+                data: error,
+            };
+        }
+    }
+
+
+    async getCompletedOrders(req) {
+        try {
+            const tokUser = await this.authService.getLoggedInUser(req);
+
+            const rider = await this.riderRepository.findOneBy({
+                id: tokUser.id
+            });
+
+            if (rider.completedOrders.length >= 0) {
                 console.log(rider)
                 return {
 
                     status: true,
                     message: 'Orders Found',
-                    numberOfAcceptOrders: rider.acceptedOrders.length,
                     numberOfCompletedOrders: rider.completedOrders.length,
-                    acceptedOrders: rider.acceptedOrders,
                     completedOrders: rider.completedOrders,
                 }
             }
@@ -358,12 +408,12 @@ export class RiderService {
                 const orders = await this.orderRepository
                     .createQueryBuilder('order')
                     .select()
-                    .addSelect(`earth_distance(ll_to_earth(${rider.latitude},${rider.longitude}), ll_to_earth(order.pickupLatitude, order.pickupLongitude))`,
+                    .addSelect(`earth_distance(ll_to_earth(${rider.latitude}, ${rider.longitude}), ll_to_earth(order.pickupLatitude, order.pickupLongitude))`,
                         'distance',)
-                    .where(`earth_distance(ll_to_earth(${rider.latitude},${rider.longitude}), ll_to_earth(order.pickupLatitude, order.pickupLongitude)) <= ${radius} `
+                    .where(`earth_distance(ll_to_earth(${rider.latitude}, ${rider.longitude}), ll_to_earth(order.pickupLatitude, order.pickupLongitude)) <= ${radius} `
                     )
                     .orderBy('distance', 'ASC')
-                    .limit(5)
+                    .limit(15)
                     .getMany();
                 const riderLocation = `${rider.longitude},${rider.latitude}`
 
@@ -378,7 +428,7 @@ export class RiderService {
 
                 }
                 const activeOrders = orders.filter(order => order.type === orderType.ACTIVE);
-                if (activeOrders.length > 0) {
+                if (activeOrders.length >= 0) {
                     return {
                         status: true,
                         message: 'Active Orders Fetched',
@@ -386,8 +436,6 @@ export class RiderService {
                         data: activeOrders,
                     };
                 }
-
-
                 return {
                     status: false,
                     message: 'No active orders found'
@@ -401,9 +449,7 @@ export class RiderService {
             console.log(error)
             return error
         }
-
     }
-
 }
 
 

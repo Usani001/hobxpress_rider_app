@@ -64,8 +64,6 @@ export class Rider {
   deletedAt: Date;
 
 
-
-
   @Column({
     default: ''
   })

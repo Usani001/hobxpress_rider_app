@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Order, orderType } from './entity/orders.entity';
+import { Order } from './entity/orders.entity';
 import { Repository } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { CreateOrderDto } from './dto/createOrder.dto';
 import axios from 'axios';
+import { User } from 'src/users/entity/user.entity';
+import { RiderService } from 'src/rider/rider.service';
+
 
 
 @Injectable()
@@ -13,6 +16,9 @@ export class OrdersService {
     @InjectRepository(Order)
     private readonly orderConnection: Repository<Order>,
     private authService: AuthService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private readonly riderService: RiderService,
   ) { }
 
   private apiKey: string = process.env.APIKEY;
@@ -24,13 +30,14 @@ export class OrdersService {
       const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${body.geo_pickup};${body.geo_delivery}?approaches=curb;curb&access_token=${this.apiKey}`;
       const response = await axios.get(url);
       const distanceInKm = response.data.destinations[1].distance / 1000;
-      const amountCharged = distanceInKm * this.amountPerKm;
+      const roundedDistance = Math.round(distanceInKm)
+      const amountCharged = roundedDistance * this.amountPerKm;
       const roundedAmountCharged = Math.round(amountCharged);
       return {
         status: true,
         message: 'Returned order cost and distance',
         orderCost: roundedAmountCharged.toLocaleString(),
-        orderDistance: distanceInKm.toFixed(2),
+        orderDistance: roundedDistance,
       }
     } catch (error) {
       console.log(error)
@@ -50,16 +57,20 @@ export class OrdersService {
 
       const response = await axios.get(url);
       const distanceInKm = response.data.destinations[1].distance / 1000;
-      const amountCharged = distanceInKm * this.amountPerKm;
+      const roundedDistance = Math.round(distanceInKm)
+      const amountCharged = roundedDistance * this.amountPerKm;
       const roundedAmountCharged = Math.round(amountCharged);
       const formattedAmountCharged = roundedAmountCharged.toLocaleString();
       body['user_id'] = tokUser.data.id;
       body['order_cost'] = formattedAmountCharged;
       body['distance'] = distanceInKm.toFixed(2);
-
       const saveOrder = await this.orderConnection.save(body);
+      const user = await this.userRepository.findOneBy({ id: tokUser.data.id })
+      const notification = `Your order to be delivered to ${body.delivery_add} has been successfully created  ${this.riderService.getFormattedDateTime()} `;
+      const userNotification = [notification, ...user.notifications]
+      user.notifications = userNotification
+      const saveUser = await this.userRepository.save(user)
       console.log(saveOrder)
-
       console.log(response.data.destinations)
       console.log('Distance: ' + distanceInKm, 'Amount: ' + amountCharged);
       return {

@@ -33,7 +33,7 @@ export class updateDto {
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get()
   getOrder(@Req() req) {
@@ -75,5 +75,10 @@ export class UsersController {
   @Delete()
   remove(@Req() req) {
     return this.usersService.remove(req);
+  }
+
+  @Get('notifications')
+  notifications(@Req() req) {
+    return this.usersService.notifications(req);
   }
 }

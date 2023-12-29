@@ -37,7 +37,7 @@ export class User {
   @Column({ type: 'text', array: true, default: [] })
   referrals: string[];
 
-  @Column({ type: 'text', array: true, default: [] })
+  @Column({ type: 'json', default: [] })
   notifications: string[];
 
   @CreateDateColumn({ nullable: true })

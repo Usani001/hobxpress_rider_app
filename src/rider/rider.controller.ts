@@ -75,9 +75,14 @@ export class RiderController {
     }
 
 
-    @Get('all')
-    getOrders(@Req() req) {
+    @Get('accepted-orders')
+    getAcceptedOrders(@Req() req) {
         return this.riderService.getAcceptedOrders(req);
+    }
+
+    @Get('completed-orders')
+    getOrders(@Req() req) {
+        return this.riderService.getCompletedOrders(req);
     }
 
 

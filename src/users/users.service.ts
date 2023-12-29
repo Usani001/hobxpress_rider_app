@@ -261,4 +261,22 @@ export class UsersService {
       };
     }
   }
+
+  async notifications(req) {
+    try {
+      const tokUser = await this.authService.getLoggedInUser(req);
+      const user = await this.userConnection.findOneBy({ id: tokUser.data.id });
+      const notifications = user.notifications;
+      return {
+        status: true,
+        message: 'Notifications Fetched',
+        data: notifications,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        message: error,
+      };
+    }
+  }
 }
