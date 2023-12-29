@@ -37,6 +37,9 @@ export class Rider {
   @Column({ type: 'text', array: true, default: [] })
   notifications: string[];
 
+  @Column({ nullable: true, unique: true })
+  phone_number: string;
+
   @Column({
     type: 'json',
     default: [],

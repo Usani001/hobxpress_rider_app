@@ -223,6 +223,7 @@ export class RiderService {
                 order.rider_id = rider.id
                 const accept = [order, ...rider.acceptedOrders];
                 order.rider_id = rider.id
+                order.rider_phone_no = rider.phone_number;
                 rider.acceptedOrders = accept;
                 const saveOrder = await this.orderRepository.save(order);
                 const saveRider = await this.riderRepository.save(rider);
