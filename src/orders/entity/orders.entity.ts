@@ -54,6 +54,12 @@ export class Order {
   })
   riderDistance: string;
 
+  @Column({ type: 'text', default: '' })
+  user_phone_no: string;
+
+  @Column({ type: 'text', default: '' })
+  rider_phone_no: string;
+
   @Column({ default: null })
   pickup_schedule_date?: string;
 

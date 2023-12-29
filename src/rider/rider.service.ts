@@ -303,7 +303,7 @@ export class RiderService {
     }
 
 
-    
+
     async getAcceptedOrders(req) {
 
         try {
@@ -413,16 +413,16 @@ export class RiderService {
                     .where(`earth_distance(ll_to_earth(${rider.latitude}, ${rider.longitude}), ll_to_earth(order.pickupLatitude, order.pickupLongitude)) <= ${radius} `
                     )
                     .orderBy('distance', 'ASC')
-                    .limit(15)
+                    .limit(10)
                     .getMany();
                 const riderLocation = `${rider.longitude},${rider.latitude}`
 
                 for (const order of orders) {
                     if (order.type === orderType.ACTIVE) {
-                        const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${riderLocation};${order.geo_pickup}?approaches=curb;curb&access_token=${this.apiKey}`;
+                        const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${riderLocation};${order.geo_pickup}?destinations=0,sources=0&annotations=distance&access_token=${this.apiKey}`
                         const response = await axios.get(url);
-                        const distanceInKm = response.data.destinations[1].distance / 1000;
-                        order.riderDistance = distanceInKm.toFixed(2)
+                        const distanceInKm = response.data.distances[1][0] / 1000;
+                        order.riderDistance = Math.ceil(distanceInKm).toFixed();
                         await this.orderRepository.save(order);
                     }
 

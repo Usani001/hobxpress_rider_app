@@ -27,17 +27,17 @@ export class OrdersService {
   async orderCost(body: CreateOrderDto, req) {
     try {
       const tokUser = await this.authService.getLoggedInUser(req);
-      const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${body.geo_pickup};${body.geo_delivery}?approaches=curb;curb&access_token=${this.apiKey}`;
+      const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${body.geo_pickup};${body.geo_delivery}?destinations=0,sources=0&annotations=distance&access_token=${this.apiKey}`
       const response = await axios.get(url);
-      const distanceInKm = response.data.destinations[1].distance / 1000;
-      const roundedDistance = Math.round(distanceInKm)
+      const distanceInKm = response.data.distances[1][0] / 1000;
+      const roundedDistance = Math.ceil(distanceInKm)
       const amountCharged = roundedDistance * this.amountPerKm;
-      const roundedAmountCharged = Math.round(amountCharged);
+      const roundedAmountCharged = Math.ceil(amountCharged);
       return {
         status: true,
         message: 'Returned order cost and distance',
         orderCost: roundedAmountCharged.toLocaleString(),
-        orderDistance: roundedDistance,
+        orderDistance: roundedDistance.toFixed(),
       }
     } catch (error) {
       console.log(error)
@@ -51,21 +51,22 @@ export class OrdersService {
   }
   async create(body: CreateOrderDto, req) {
     const tokUser = await this.authService.getLoggedInUser(req);
-    const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${body.geo_pickup};${body.geo_delivery}?approaches=curb;curb&access_token=${this.apiKey}`;
+    const user = await this.userRepository.findOneBy({ id: tokUser.data.id })
+    const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${body.geo_pickup};${body.geo_delivery}?destinations=0,sources=0&annotations=distance&access_token=${this.apiKey}`
 
     try {
-
       const response = await axios.get(url);
-      const distanceInKm = response.data.destinations[1].distance / 1000;
-      const roundedDistance = Math.round(distanceInKm)
+      const distanceInKm = response.data.distances[1][0] / 1000;
+      const roundedDistance = Math.ceil(distanceInKm)
       const amountCharged = roundedDistance * this.amountPerKm;
-      const roundedAmountCharged = Math.round(amountCharged);
+      const roundedAmountCharged = Math.ceil(amountCharged);
       const formattedAmountCharged = roundedAmountCharged.toLocaleString();
-      body['user_id'] = tokUser.data.id;
+      body['user_id'] = user.id;
       body['order_cost'] = formattedAmountCharged;
-      body['distance'] = distanceInKm.toFixed(2);
+      body['distance'] = roundedDistance.toFixed(0);
+      body['user_phone_no'] = user.phone_number;
       const saveOrder = await this.orderConnection.save(body);
-      const user = await this.userRepository.findOneBy({ id: tokUser.data.id })
+
       const notification = `Your order to be delivered to ${body.delivery_add} has been successfully created  ${this.riderService.getFormattedDateTime()} `;
       const userNotification = [notification, ...user.notifications]
       user.notifications = userNotification
