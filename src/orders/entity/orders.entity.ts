@@ -57,7 +57,10 @@ export class Order {
   @Column({ type: 'text', default: '' })
   user_phone_no: string;
 
-  @Column({ type: 'text', default: '' })
+  @Column({
+    type: 'text', default: '', nullable: true
+
+  })
   rider_phone_no: string;
 
   @Column({ default: null })

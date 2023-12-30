@@ -108,6 +108,12 @@ export class RiderService {
                     process.env.DEFAULT_SECRET,
                     //{ expiresIn: '24h' }
                 );
+                const notification = {
+                    headerText: 'Login Successful', body: 'You successfully logged into your account', time: this.getFormattedDateTime()
+                };
+                const riderNotification = [notification, ...isRider.notifications];
+                isRider.notifications = riderNotification;
+                await this.riderRepository.save(isRider);
 
                 return {
                     status: true,
@@ -143,6 +149,11 @@ export class RiderService {
             if (body.last_name) {
                 getRider.last_name = body.last_name;
             }
+            const notification = {
+                headerText: 'Profile Update', body: 'You successfully Updated your profile', time: this.getFormattedDateTime()
+            };
+            const riderNotification = [notification, ...getRider.notifications];
+            getRider.notifications = riderNotification;
 
             await this.riderRepository.save(getRider);
             return {
@@ -224,14 +235,21 @@ export class RiderService {
                 const accept = [order, ...rider.acceptedOrders];
                 order.rider_id = rider.id
                 order.rider_phone_no = rider.phone_number;
+
                 rider.acceptedOrders = accept;
                 const saveOrder = await this.orderRepository.save(order);
-                const saveRider = await this.riderRepository.save(rider);
+
                 const user = await this.userRepository.findOneBy({ id: order.user_id })
-                const notification = `Your item has been assigned to a rider ${this.getFormattedDateTime()}`;
-                const userNotification = [notification, ...user.notifications]
+                const notificationUser = { headerText: 'Pick Up Confirmed', body: 'Your item has been assigned to a rider', time: this.getFormattedDateTime() };
+                const notificationRider = {
+                    headerText: 'Pick Up Confirmed', body: 'You accepted a pickup from ' + user.first_name + ' ' + user.last_name, time: this.getFormattedDateTime()
+                };
+                const riderNotification = [notificationRider, ...rider.notifications];
+                rider.notifications = riderNotification;
+                const userNotification = [notificationUser, ...user.notifications];
                 user.notifications = userNotification
                 const saveUser = await this.userRepository.save(user)
+                const saveRider = await this.riderRepository.save(rider);
 
                 return {
                     status: true,
@@ -276,9 +294,14 @@ export class RiderService {
                 const saveOrder = await this.orderRepository.save(order)
                 const saveRider = await this.riderRepository.save(rider)
                 const user = await this.userRepository.findOneBy({ id: order.user_id })
-                const notification = `Your item has been delivered successfully ${this.getFormattedDateTime()}`;
-                const userNotification = [notification, ...user.notifications]
+                const notificationUser = { headerText: 'Item Delivered', body: 'Your item has been delivered successfully', time: this.getFormattedDateTime() };
+                const notificationRider = {
+                    headerText: 'Item Delivered', body: `You have delivered an item to ${order.delivery_add} successfully`, time: this.getFormattedDateTime()
+                };
+                const userNotification = [notificationUser, ...user.notifications]
+                const riderNotification = [notificationRider, ...rider.notifications]
                 user.notifications = userNotification
+                rider.notifications = riderNotification
                 const saveUser = await this.userRepository.save(user)
 
                 return {
@@ -416,7 +439,7 @@ export class RiderService {
                     .orderBy('distance', 'ASC')
                     .limit(10)
                     .getMany();
-                const riderLocation = `${rider.longitude},${rider.latitude}`
+                const riderLocation = `${rider.longitude},${rider.latitude} `;
 
                 for (const order of orders) {
                     if (order.type === orderType.ACTIVE) {
@@ -447,9 +470,35 @@ export class RiderService {
                 message: 'Rider not found'
             };
         } catch (error) {
-            console.log(error)
+            console.log(error);
             return error
         }
+    }
+
+    async notifications(req) {
+
+        const riderToken = await this.authService.getLoggedInUser(req);
+        const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id });
+        try {
+            if (rider) {
+                return {
+                    status: true,
+                    message: 'Notifications fetched',
+                    data: rider.notifications,
+                }
+            }
+            return {
+                status: false,
+                message: 'Rider not found',
+            }
+        } catch (error) {
+            console.log('Error found: ' + error);
+            return {
+                status: false,
+                message: 'Error fetching notifications'
+            }
+        }
+
     }
 }
 

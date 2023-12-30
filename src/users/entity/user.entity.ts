@@ -8,6 +8,8 @@ import {
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
+
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -38,7 +40,7 @@ export class User {
   referrals: string[];
 
   @Column({ type: 'json', default: [] })
-  notifications: string[];
+  notifications: Object[];
 
   @CreateDateColumn({ nullable: true })
   createdAt: Date;

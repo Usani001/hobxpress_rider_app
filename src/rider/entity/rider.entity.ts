@@ -34,8 +34,8 @@ export class Rider {
   last_name: string;
 
 
-  @Column({ type: 'text', array: true, default: [] })
-  notifications: string[];
+  @Column({ type: 'json', default: [] })
+  notifications: Object[];
 
   @Column({ nullable: true, unique: true })
   phone_number: string;

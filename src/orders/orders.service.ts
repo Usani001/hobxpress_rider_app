@@ -67,7 +67,10 @@ export class OrdersService {
       body['user_phone_no'] = user.phone_number;
       const saveOrder = await this.orderConnection.save(body);
 
-      const notification = `Your order to be delivered to ${body.delivery_add} has been successfully created  ${this.riderService.getFormattedDateTime()} `;
+      const notification = {
+        headerText: 'Order Created', body: `Your order to be delivered to ${body.delivery_add} has been successfully created`, time: this.riderService.getFormattedDateTime()
+      };
+
       const userNotification = [notification, ...user.notifications]
       user.notifications = userNotification
       const saveUser = await this.userRepository.save(user)

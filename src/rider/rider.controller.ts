@@ -96,6 +96,10 @@ export class RiderController {
     activeOrders(@Req() req) {
         return this.riderService.getActiveOrders(req);
     }
+    @Get('notifications')
+    notifications(@Req() req) {
+        return this.riderService.notifications(req);
+    }
 }
 
 

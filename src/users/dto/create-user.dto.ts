@@ -1,6 +1,7 @@
 import { OmitType } from '@nestjs/swagger';
 import { User } from '../entity/user.entity';
 
+
 export class CreateUserDto extends OmitType(User, [
   'ref_code',
   'referrals',
@@ -9,7 +10,7 @@ export class CreateUserDto extends OmitType(User, [
   'otp_token',
   'deletedAt',
   'createdAt',
-] as const) {}
+] as const) { }
 
 export class CreateUserResponseDto {
   error: boolean;
