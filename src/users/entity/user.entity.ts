@@ -8,8 +8,6 @@ import {
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-
-
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -23,6 +21,9 @@ export class User {
 
   @Column({ default: '' })
   first_name: string;
+
+  @Column({ default: '' })
+  profile_pic?: string;
 
   @Column({ default: '' })
   last_name: string;
