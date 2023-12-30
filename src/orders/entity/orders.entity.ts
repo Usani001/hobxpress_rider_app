@@ -24,6 +24,9 @@ export class Order {
   @Column({ default: '', nullable: true })
   rider_id: string;
 
+  @Column({ type: 'text', array: true, default: [] })
+  images?: string[];
+
   @Column({ default: '' })
   pickup_add: string;
 
@@ -38,19 +41,19 @@ export class Order {
 
   @Column({
     type: 'text',
-    default: ''
+    default: '',
   })
   order_cost: string;
 
   @Column({
     type: 'text',
-    default: ''
+    default: '',
   })
   distance: string;
 
   @Column({
     type: 'text',
-    default: ''
+    default: '',
   })
   riderDistance: string;
 
@@ -58,8 +61,9 @@ export class Order {
   user_phone_no: string;
 
   @Column({
-    type: 'text', default: '', nullable: true
-
+    type: 'text',
+    default: '',
+    nullable: true,
   })
   rider_phone_no: string;
 
@@ -94,7 +98,7 @@ export class Order {
   ratings?: number;
 
   @Column({
-    default: false
+    default: false,
   })
   rated: boolean;
 
@@ -121,6 +125,4 @@ export class Order {
 
   @DeleteDateColumn({ nullable: true })
   deletedAt: Date;
-
-
 }
