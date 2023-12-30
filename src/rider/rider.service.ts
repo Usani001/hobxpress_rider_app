@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { RiderDto } from './dtos/rider.dto';
 import { Rider } from './entity/rider.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Timestamp } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { riderLogin, updateRiderDto } from './rider.controller';
 import { Order, orderType } from 'src/orders/entity/orders.entity';
@@ -237,9 +237,9 @@ export class RiderService {
                 order.rider_phone_no = rider.phone_number;
 
                 rider.acceptedOrders = accept;
-                const saveOrder = await this.orderRepository.save(order);
 
-                const user = await this.userRepository.findOneBy({ id: order.user_id })
+
+                const user = await this.userRepository.findOneBy({ id: order.user_id });
                 const notificationUser = { headerText: 'Pick Up Confirmed', body: 'Your item has been assigned to a rider', time: this.getFormattedDateTime() };
                 const notificationRider = {
                     headerText: 'Pick Up Confirmed', body: 'You accepted a pickup from ' + user.first_name + ' ' + user.last_name, time: this.getFormattedDateTime()
@@ -247,7 +247,8 @@ export class RiderService {
                 const riderNotification = [notificationRider, ...rider.notifications];
                 rider.notifications = riderNotification;
                 const userNotification = [notificationUser, ...user.notifications];
-                user.notifications = userNotification
+                user.notifications = userNotification;
+                const saveOrder = await this.orderRepository.save(order);
                 const saveUser = await this.userRepository.save(user)
                 const saveRider = await this.riderRepository.save(rider);
 
@@ -291,8 +292,7 @@ export class RiderService {
                 const accept = [order, ...rider.completedOrders];
                 orderIndex !== -1 ? rider.completedOrders = accept : rider.completedOrders
                 orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : rider.completedOrders;
-                const saveOrder = await this.orderRepository.save(order)
-                const saveRider = await this.riderRepository.save(rider)
+
                 const user = await this.userRepository.findOneBy({ id: order.user_id })
                 const notificationUser = { headerText: 'Item Delivered', body: 'Your item has been delivered successfully', time: this.getFormattedDateTime() };
                 const notificationRider = {
@@ -301,8 +301,10 @@ export class RiderService {
                 const userNotification = [notificationUser, ...user.notifications]
                 const riderNotification = [notificationRider, ...rider.notifications]
                 user.notifications = userNotification
-                rider.notifications = riderNotification
-                const saveUser = await this.userRepository.save(user)
+                rider.notifications = riderNotification;
+                const saveOrder = await this.orderRepository.save(order);
+                const saveRider = await this.riderRepository.save(rider);
+                const saveUser = await this.userRepository.save(user);
 
                 return {
                     status: true,
@@ -432,18 +434,19 @@ export class RiderService {
                 const orders = await this.orderRepository
                     .createQueryBuilder('order')
                     .select()
-                    .addSelect(`earth_distance(ll_to_earth(${rider.latitude}, ${rider.longitude}), ll_to_earth(order.pickupLatitude, order.pickupLongitude))`,
+                    .addSelect(`earth_distance(ll_to_earth(${rider.latitude},${rider.longitude}),ll_to_earth(order.pickupLatitude, order.pickupLongitude))`,
                         'distance',)
-                    .where(`earth_distance(ll_to_earth(${rider.latitude}, ${rider.longitude}), ll_to_earth(order.pickupLatitude, order.pickupLongitude)) <= ${radius} `
+                    .where(`earth_distance(ll_to_earth(${rider.latitude},${rider.longitude}),ll_to_earth(order.pickupLatitude, order.pickupLongitude))<=${radius} `
                     )
                     .orderBy('distance', 'ASC')
                     .limit(10)
                     .getMany();
-                const riderLocation = `${rider.longitude},${rider.latitude} `;
+
+                const riderLocation = `${rider.longitude},${rider.latitude}`;
 
                 for (const order of orders) {
                     if (order.type === orderType.ACTIVE) {
-                        const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${riderLocation};${order.geo_pickup}?destinations=0,sources=0&annotations=distance&access_token=${this.apiKey}`
+                        const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${riderLocation};${order.geo_pickup}?destinations=0,sources=0&annotations=distance&access_token=${this.apiKey}`;
                         const response = await axios.get(url);
                         const distanceInKm = response.data.distances[1][0] / 1000;
                         order.riderDistance = Math.ceil(distanceInKm).toFixed();
