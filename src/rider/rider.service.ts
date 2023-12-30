@@ -430,7 +430,7 @@ export class RiderService {
 
         try {
             if (rider) {
-                const radius = 5000;
+                const radius = 10000;
                 const orders = await this.orderRepository
                     .createQueryBuilder('order')
                     .select()

@@ -32,7 +32,7 @@ export class OrdersService {
       const distanceInKm = response.data.distances[1][0] / 1000;
       const roundedDistance = Math.ceil(distanceInKm)
       const amountCharged = roundedDistance * this.amountPerKm;
-      const roundedAmountCharged = Math.ceil(amountCharged);
+      const roundedAmountCharged = Math.ceil(amountCharged / 50) * 50;
       return {
         status: true,
         message: 'Returned order cost and distance',
@@ -59,7 +59,7 @@ export class OrdersService {
       const distanceInKm = response.data.distances[1][0] / 1000;
       const roundedDistance = Math.ceil(distanceInKm)
       const amountCharged = roundedDistance * this.amountPerKm;
-      const roundedAmountCharged = Math.ceil(amountCharged);
+      const roundedAmountCharged = Math.ceil(amountCharged / 50) * 50;
       const formattedAmountCharged = roundedAmountCharged.toLocaleString();
       body['user_id'] = user.id;
       body['order_cost'] = formattedAmountCharged;
