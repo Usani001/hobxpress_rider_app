@@ -10,7 +10,7 @@ import { OrdersService } from './orders.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateOrderDto } from './dto/createOrder.dto';
 import { Order } from './entity/orders.entity';
-import { Rider } from 'src/rider/entity/rider.entity';
+import { RiderDto } from 'src/rider/dtos/rider.dto';
 
 
 @Controller('order')
@@ -43,5 +43,34 @@ export class OrdersController {
   @Get('order-cost')
   orderCost(@Body() body: CreateOrderDto, @Req() req) {
     return this.orderService.orderCost(body, req);
+  }
+
+
+  @Post('accept-order')
+  acceptOrder(@Body() request: RiderDto, @Body() orders: Order, @Req() req) {
+    return this.orderService.acceptOrder(request, orders, req);
+  }
+
+  @Post('order-complete')
+  completeOrder(@Body() orders: Order, @Req() req) {
+    return this.orderService.completeAnOrder(orders, req);
+  }
+
+
+  @Get('accepted-orders')
+  getAcceptedOrders(@Req() req) {
+    return this.orderService.getAcceptedOrders(req);
+  }
+
+  @Get('completed-orders')
+  getCompletedOrders(@Req() req) {
+    return this.orderService.getCompletedOrders(req);
+  }
+
+
+
+  @Post('active-orders')
+  activeOrders(@Req() req) {
+    return this.orderService.getActiveOrders(req);
   }
 }
