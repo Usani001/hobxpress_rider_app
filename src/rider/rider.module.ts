@@ -9,6 +9,7 @@ import { Order } from 'src/orders/entity/orders.entity';
 import { UsersModule } from 'src/users/users.module';
 import { User } from 'src/users/entity/user.entity';
 
+
 @Module({
   controllers: [RiderController],
   providers: [RiderService],

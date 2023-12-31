@@ -64,38 +64,12 @@ export class RiderController {
         return this.riderService.findRider(req);
     }
 
-    @Post('accept-order')
-    async acceptOrder(@Body() request: RiderDto, @Body() orders: Order, @Req() req) {
-        return this.riderService.acceptOrder(request, orders, req);
-    }
-
-    @Post('order-complete')
-    async completeOrder(@Body() orders: Order, @Req() req) {
-        return this.riderService.completeAnOrder(orders, req);
-    }
-
-
-    @Get('accepted-orders')
-    getAcceptedOrders(@Req() req) {
-        return this.riderService.getAcceptedOrders(req);
-    }
-
-    @Get('completed-orders')
-    getOrders(@Req() req) {
-        return this.riderService.getCompletedOrders(req);
-    }
-
-
     @Post('location-update')
     updateLocation(@Body() request: Rider, @Req() req) {
         return this.riderService.liveLocation(request, req);
     }
 
 
-    @Post('active-orders')
-    activeOrders(@Req() req) {
-        return this.riderService.getActiveOrders(req);
-    }
     @Get('notifications')
     notifications(@Req() req) {
         return this.riderService.notifications(req);
