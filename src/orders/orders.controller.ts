@@ -10,7 +10,6 @@ import { OrdersService } from './orders.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateOrderDto } from './dto/createOrder.dto';
 import { Order } from './entity/orders.entity';
-import { Rider } from 'src/rider/entity/rider.entity';
 import { RiderDto } from 'src/rider/dtos/rider.dto';
 
 
@@ -53,7 +52,7 @@ export class OrdersController {
   }
 
   @Post('order-complete')
-  async completeOrder(@Body() orders: Order, @Req() req) {
+  completeOrder(@Body() orders: Order, @Req() req) {
     return this.orderService.completeAnOrder(orders, req);
   }
 
@@ -67,8 +66,6 @@ export class OrdersController {
   getCompletedOrders(@Req() req) {
     return this.orderService.getCompletedOrders(req);
   }
-
-
 
 
 

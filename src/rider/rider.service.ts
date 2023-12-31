@@ -24,10 +24,6 @@ export class RiderService {
 
     }
 
-
-    private apiKey: string = process.env.APIKEY;
-
-
     async createRider(createRiderDto: riderLogin) {
         try {
             const rider = await this.riderRepository.findOneBy({ reg_code: createRiderDto.reg_code });
@@ -124,6 +120,7 @@ export class RiderService {
         }
     }
 
+
     async updateRider(body: updateRiderDto, req) {
         try {
             const tokRider = await this.authService.getLoggedInUser(req);
@@ -149,8 +146,9 @@ export class RiderService {
                 message: 'Rider updated successfully',
             };
         } catch (error) {
+            console.log(error)
             return {
-                status: true,
+                status: false,
                 message: 'error updating rider',
             };
         }

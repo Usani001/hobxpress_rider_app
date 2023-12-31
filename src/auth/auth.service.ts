@@ -12,11 +12,8 @@ var jwt = require('jsonwebtoken');
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly entityManager: EntityManager,
     @InjectRepository(User)
     private readonly userConnection: Repository<User>,
-    @InjectRepository(Rider)
-    private readonly riderConnection: Repository<Rider>
   ) { }
 
 
@@ -66,44 +63,6 @@ export class AuthService {
     }
   }
 
-  // async sendRiderOTP(data) {
-  //   try {
-  //     const rider = await this.riderConnection.findOneBy({ email: data.email });
-
-  //     if (!rider) {
-  //       // Generate OTP
-  //       const OTP = this.generateOtp2(process.env.OTP_SECRETS, data.email);
-
-  //       const newRider = await this.riderConnection.create();
-  //       // Store OTP in the user's data or a temporary storage (e.g., a cache or session)
-  //       newRider.otp_token = OTP;
-  //       newRider.email = data.email;
-
-  //       // Save the user data with the OTP to your database
-  //       let last = await this.riderConnection.save(newRider);
-
-  //       // Send OTP to the user (e.g., via email or SMS)
-  //       await this.sendEmail(data.email, OTP);
-  //       console.log(last);
-
-  //       //send otp email
-  //       return {
-  //         status: true,
-  //         message: 'OTP sent: ' + newRider.otp_token,
-  //       };
-  //     } else {
-  //       return {
-  //         status: false,
-  //         message: 'Rider already exists',
-  //       };
-  //     }
-  //   } catch (error) {
-  //     return {
-  //       status: false,
-  //       data: error,
-  //     };
-  //   }
-  // }
 
   async resendOTP(data) {
     try {
@@ -181,7 +140,6 @@ export class AuthService {
   }
 
   extractTokenFromHeader(request) {
-    console.log(request.headers.authorization);
     let token = request.headers.authorization.substring(
       7,
       request.headers.authorization.length

@@ -6,7 +6,6 @@ import { AuthService } from 'src/auth/auth.service';
 import { CreateOrderDto } from './dto/createOrder.dto';
 import axios from 'axios';
 import { User } from 'src/users/entity/user.entity';
-import { RiderService } from 'src/rider/rider.service';
 import { Rider } from 'src/rider/entity/rider.entity';
 import { RiderDto } from 'src/rider/dtos/rider.dto';
 
