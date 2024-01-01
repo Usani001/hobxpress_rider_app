@@ -62,17 +62,36 @@ export class RiderService {
     }
 
     async findRider(req) {
+        const riderTok = await this.authService.getLoggedInUser(req);
+        const rider = await this.riderRepository.findOneBy({ id: riderTok.id });
         try {
-            const tokUser = await this.authService.getLoggedInUser(req);
-            const getRider = await this.riderRepository.findOne({
-                where: { id: tokUser.data.id },
-            });
-            if (!getRider || getRider.deletedAt) {
-                return { status: false, message: 'Rider not found' };
+            for (const order of rider.completedOrders) {
+                if (order.type === orderType.INPROGRESS && order.rated === false) {
+                    rider.totalRatings += order.ratings;
+                    rider.ratedOrder++;
+                    rider.riderRatings = rider.totalRatings / rider.ratedOrder;
+                    order.rated = true;
+                    const saveOrder = await this.orderRepository.save(order);
+                    const saveRider = await this.riderRepository.save(rider);
+
+                }
             }
-            return { status: true, message: 'Rider found', data: getRider };
+            const totalOrders = rider.acceptedOrders.length + rider.completedOrders.length;
+            return {
+                status: true,
+                message: 'Rider Profile returned',
+                totalOrders: totalOrders,
+                rating: rider.riderRatings,
+                rider: rider
+            }
+
+
         } catch (error) {
-            return { status: true, message: 'error', data: error };
+            console.log(error);
+            return {
+                status: false,
+                message: 'Error in fetching details'
+            }
         }
     }
 
@@ -262,43 +281,6 @@ export class RiderService {
 
     }
 
-    async riderRatings(req) {
-        const riderTok = await this.authService.getLoggedInUser(req);
-        const rider = await this.riderRepository.findOneBy({ id: riderTok.id });
-        const order = await this.orderRepository.findOneBy({ rider_id: rider.id });
-        try {
-
-            if (order.type === orderType.COMPLETED && order.rated === false) {
-                rider.totalRatings += order.ratings;
-                rider.ratedOrder++;
-                rider.riderRatings = rider.totalRatings / rider.ratedOrder;
-                order.rated = true;
-                const totalOrders = rider.acceptedOrders.length + rider.completedOrders.length;
-                const saveRider = await this.riderRepository.save(rider);
-                return {
-                    status: true,
-                    message: 'Returned sum of orders accepted and completed and ratings',
-                    totalOrders: totalOrders,
-                    rating: saveRider.riderRatings
-                }
-
-            }
-            const totalOrders = rider.acceptedOrders.length + rider.completedOrders.length;
-            return {
-                status: true,
-                message: 'Returned sum of orders accepted and completed and ratings',
-                totalOrders: totalOrders,
-                rating: rider.riderRatings
-            }
-
-        } catch (error) {
-            console.log(error);
-            return {
-                status: false,
-                message: 'Error in fetching details'
-            }
-        }
-    }
 }
 
 

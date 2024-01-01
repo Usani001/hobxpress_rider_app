@@ -204,7 +204,7 @@ export class OrdersService {
           message: 'Rider has accepted order',
           data: saveOrder,
         }
-      } else if (request.riderResponse === 'REJECT') {
+      } else if (request.riderResponse === 'REJECT' && order.type === orderType.ACTIVE) {
         return {
           status: true,
           message: 'Rider has rejected order',
