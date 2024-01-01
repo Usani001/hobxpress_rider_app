@@ -176,7 +176,8 @@ export class OrdersService {
     try {
       const riderToken = await this.authService.getLoggedInUser(req);
       const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id })
-      const order = await this.orderRepository.findOneBy({ id: orders.id })
+      const order = await this.orderRepository.findOneBy({ id: orders.id });
+      const user = await this.userRepository.findOneBy({ id: order.user_id });
 
       if (order.type === orderType.ACTIVE && request.riderResponse === 'ACCEPT' &&
         rider) {
@@ -186,10 +187,9 @@ export class OrdersService {
         order.rider_id = rider.id
         order.rider_phone_no = rider.phone_number;
         rider.acceptedOrders = accept;
-        const user = await this.userRepository.findOneBy({ id: order.user_id });
         const notificationUser = { headerText: 'Pick Up Confirmed', body: 'Your item has been assigned to a rider', time: this.getFormattedDateTime() };
         const notificationRider = {
-          headerText: 'Pick Up Confirmed', body: 'You accepted a pickup from ' + user.first_name + ' ' + user.last_name, time: this.getFormattedDateTime()
+          headerText: 'Pick Up Confirmed', body: 'You accepted an order to be picked up from ' + order.pickup_add, time: this.getFormattedDateTime()
         };
         const riderNotification = [notificationRider, ...rider.notifications];
         rider.notifications = riderNotification;
@@ -205,9 +205,13 @@ export class OrdersService {
           data: saveOrder,
         }
       } else if (request.riderResponse === 'REJECT' && order.type === orderType.ACTIVE) {
-        const activeOrders = await this.getActiveOrders({ id: rider.id });
-        const orderIndex = activeOrders.findIndex(order => order.id === orders.id);
-        orderIndex !== -1 ? activeOrders.splice(orderIndex, 1) : null;
+        const notificationRider = {
+          headerText: 'Pick Up Rejected', body: 'You Rejected an order', time: this.getFormattedDateTime()
+        };
+        const riderNotification = [notificationRider, ...rider.notifications];
+        rider.notifications = riderNotification;
+        const saveRider = await this.riderRepository.save(rider);
+
         return {
           status: true,
           message: 'Rider has rejected order',
@@ -240,7 +244,7 @@ export class OrdersService {
         orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : rider.completedOrders;
 
         const user = await this.userRepository.findOneBy({ id: order.user_id })
-        const notificationUser = { headerText: 'Item Delivered', body: 'Your item has been delivered successfully', time: this.getFormattedDateTime() };
+        const notificationUser = { headerText: 'Item Delivered', body: 'Your item has been delivered successfully to ' + order.delivery_add, time: this.getFormattedDateTime() };
         const notificationRider = {
           headerText: 'Item Delivered', body: `You have delivered an item to ${order.delivery_add} successfully`, time: this.getFormattedDateTime()
         };
