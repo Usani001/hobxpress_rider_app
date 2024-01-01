@@ -186,7 +186,9 @@ export class UsersService {
       if (body.phone_number) {
         getUser.phone_number = body.phone_number;
       }
-
+      if (body.profile_pic) {
+        getUser.profile_pic = body.profile_pic;
+      }
       if (body.email) {
         getUser.email = body.email;
       }

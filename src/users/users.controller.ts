@@ -30,6 +30,7 @@ export class updateDto {
   phone_number?: string;
   password?: string;
   old_password?: string;
+  profile_pic?: string;
 }
 
 @Controller('users')
