@@ -150,13 +150,18 @@ export class OrdersService {
       const getOrder = await this.orderRepository.findOne({
         where: { id: body.id },
       });
-
-      if (body.rating) {
-        getOrder.ratings = body.rating;
+      const rider = await this.riderRepository.findOneBy({ id: getOrder.rider_id })
+      for (const order of rider.completedOrders) {
+        if (body.rating) {
+          getOrder.ratings = body.rating;
+          order.ratings = body.rating;
+        }
+        if (body.comment) {
+          getOrder.comments = body.comment;
+          order.comments = body.comment;
+        }
       }
-      if (body.comment) {
-        getOrder.comments = body.comment;
-      }
+      await this.riderRepository.save(rider);
       await this.orderRepository.save(getOrder);
       return {
         status: true,
@@ -234,25 +239,26 @@ export class OrdersService {
   async completeAnOrder(orders: Order, req) {
     try {
       const riderToken = await this.authService.getLoggedInUser(req);
-      const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id });
-      const order = await this.orderRepository.findOneBy({ id: orders.id });
+      const rider = await this.riderRepository.findOneBy({ id: riderToken.id });
+      const order = await this.orderRepository.findOneBy({ id: orders.id })
+
       if (order.type === orderType.INPROGRESS && rider) {
-        const orderIndex = rider.acceptedOrders.findIndex(order => order.id === orders.id);
+        const orderIndex = rider.acceptedOrders.findIndex(o => o.id === orders.id);
         order.type = orderType.COMPLETED
         const accept = [order, ...rider.completedOrders];
-        orderIndex !== -1 ? rider.completedOrders = accept : rider.completedOrders
-        orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : rider.completedOrders;
-
-        const user = await this.userRepository.findOneBy({ id: order.user_id })
+        orderIndex !== -1 ? rider.completedOrders = accept : null;
+        orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : null;
+        const saveOrder = await this.orderRepository.save(order);
         const notificationUser = { headerText: 'Item Delivered', body: 'Your item has been delivered successfully to ' + order.delivery_add, time: this.getFormattedDateTime() };
         const notificationRider = {
           headerText: 'Item Delivered', body: `You have delivered an item to ${order.delivery_add} successfully`, time: this.getFormattedDateTime()
         };
+        const user = await this.userRepository.findOneBy({ id: order.user_id });
         const userNotification = [notificationUser, ...user.notifications]
         const riderNotification = [notificationRider, ...rider.notifications]
         user.notifications = userNotification
         rider.notifications = riderNotification;
-        const saveOrder = await this.orderRepository.save(order);
+
         const saveRider = await this.riderRepository.save(rider);
         const saveUser = await this.userRepository.save(user);
         return {
@@ -263,7 +269,7 @@ export class OrdersService {
       }
       return {
         status: false,
-        message: 'Rider or Order not found'
+        message: 'Order or Rider not found',
       }
     } catch (error) {
       console.log(error);
@@ -312,7 +318,7 @@ export class OrdersService {
       const tokUser = await this.authService.getLoggedInUser(req);
 
       const rider = await this.riderRepository.findOneBy({
-        id: tokUser.id
+        id: tokUser.data.id
       });
 
       if (rider.completedOrders.length >= 0) {

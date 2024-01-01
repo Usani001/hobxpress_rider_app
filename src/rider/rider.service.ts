@@ -63,15 +63,14 @@ export class RiderService {
 
     async findRider(req) {
         const riderTok = await this.authService.getLoggedInUser(req);
-        const rider = await this.riderRepository.findOneBy({ id: riderTok.id });
+        const rider = await this.riderRepository.findOneBy({ id: riderTok.data.id });
         try {
             for (const order of rider.completedOrders) {
-                if (order.type === orderType.INPROGRESS && order.rated === false) {
+                if (order.type === orderType.COMPLETED && order.rated === false && order.ratings > 0) {
                     rider.totalRatings += order.ratings;
                     rider.ratedOrder++;
                     rider.riderRatings = rider.totalRatings / rider.ratedOrder;
                     order.rated = true;
-                    const saveOrder = await this.orderRepository.save(order);
                     const saveRider = await this.riderRepository.save(rider);
 
                 }
