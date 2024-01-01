@@ -67,7 +67,7 @@ export class OrdersService {
   async create(body: CreateOrderDto, req) {
     const tokUser = await this.authService.getLoggedInUser(req);
     const user = await this.userRepository.findOneBy({ id: tokUser.data.id })
-    const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${body.geo_pickup};${body.geo_delivery}?destinations=0,sources=0&annotations=distance&access_token=${this.apiKey}`
+    const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${body.geo_pickup};${body.geo_delivery}?destinations=0,sources=0&annotations=distance&access_token=${this.apiKey}`;
 
     try {
       const response = await axios.get(url);
@@ -79,7 +79,6 @@ export class OrdersService {
       body['user_id'] = user.id;
       body['order_cost'] = formattedAmountCharged;
       body['distance'] = roundedDistance.toFixed(0);
-      body['user_phone_no'] = user.phone_number;
       const saveOrder = await this.orderRepository.save(body);
 
       const notification = {
@@ -128,7 +127,6 @@ export class OrdersService {
 
   async findOrder(body) {
     try {
-
       const getOrder = await this.orderRepository.findOneBy({
         id: body.id
       },
@@ -147,10 +145,6 @@ export class OrdersService {
     }
   }
 
-
-
-
-
   async rate(body, req) {
     try {
       const getOrder = await this.orderRepository.findOne({
@@ -163,7 +157,6 @@ export class OrdersService {
       if (body.comment) {
         getOrder.comments = body.comment;
       }
-
       await this.orderRepository.save(getOrder);
       return {
         status: true,
@@ -192,10 +185,7 @@ export class OrdersService {
         const accept = [order, ...rider.acceptedOrders];
         order.rider_id = rider.id
         order.rider_phone_no = rider.phone_number;
-
         rider.acceptedOrders = accept;
-
-
         const user = await this.userRepository.findOneBy({ id: order.user_id });
         const notificationUser = { headerText: 'Pick Up Confirmed', body: 'Your item has been assigned to a rider', time: this.getFormattedDateTime() };
         const notificationRider = {
@@ -214,8 +204,6 @@ export class OrdersService {
           message: 'Rider has accepted order',
           data: saveOrder,
         }
-
-
       } else if (request.riderResponse === 'REJECT') {
         return {
           status: true,
@@ -234,8 +222,6 @@ export class OrdersService {
         data: error
       }
     }
-
-
   }
 
   async completeAnOrder(orders: Order, req) {
@@ -262,7 +248,6 @@ export class OrdersService {
         const saveOrder = await this.orderRepository.save(order);
         const saveRider = await this.riderRepository.save(rider);
         const saveUser = await this.userRepository.save(user);
-
         return {
           status: true,
           message: 'Rider has completed order delivery',
@@ -281,11 +266,7 @@ export class OrdersService {
         data: error
       }
     }
-
-
   }
-
-
 
   async getAcceptedOrders(req) {
 
@@ -298,7 +279,6 @@ export class OrdersService {
       if (rider.acceptedOrders.length >= 0) {
         console.log(rider.acceptedOrders);
         return {
-
           status: true,
           message: 'Orders Found',
           numberOfAcceptedOrders: rider.acceptedOrders.length,
@@ -319,7 +299,6 @@ export class OrdersService {
       };
     }
   }
-
 
   async getCompletedOrders(req) {
     try {
@@ -355,9 +334,6 @@ export class OrdersService {
     }
   }
 
-
-
-
   async getActiveOrders(req) {
     const tokUser = await this.authService.getLoggedInUser(req);
     const rider = await this.riderRepository.findOneBy({ id: tokUser.data.id })
@@ -386,7 +362,6 @@ export class OrdersService {
             order.riderDistance = Math.ceil(distanceInKm).toFixed();
             await this.orderRepository.save(order);
           }
-
         }
         const activeOrders = orders.filter(order => order.type === orderType.ACTIVE);
         if (activeOrders.length >= 0) {
@@ -411,5 +386,4 @@ export class OrdersService {
       return error
     }
   }
-
 }

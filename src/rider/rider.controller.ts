@@ -74,6 +74,11 @@ export class RiderController {
     notifications(@Req() req) {
         return this.riderService.notifications(req);
     }
+
+    @Get('rider-info')
+    riderRatings(@Req() req) {
+        return this.riderService.riderRatings(req);
+    }
 }
 
 

@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { riderLogin, updateRiderDto } from './rider.controller';
 import { OrdersService } from 'src/orders/orders.service';
+import { Order, orderType } from 'src/orders/entity/orders.entity';
 var jwt = require('jsonwebtoken');
 
 
@@ -17,6 +18,8 @@ export class RiderService {
         @InjectRepository(Rider)
         private readonly riderRepository: Repository<Rider>,
         private orderService: OrdersService,
+        @InjectRepository(Order)
+        private readonly orderRepository: Repository<Order>,
         private authService: AuthService,
 
 
@@ -257,6 +260,44 @@ export class RiderService {
             }
         }
 
+    }
+
+    async riderRatings(req) {
+        const riderTok = await this.authService.getLoggedInUser(req);
+        const rider = await this.riderRepository.findOneBy({ id: riderTok.id });
+        const order = await this.orderRepository.findOneBy({ rider_id: rider.id });
+        try {
+
+            if (order.type === orderType.COMPLETED && order.rated === false) {
+                rider.totalRatings += order.ratings;
+                rider.ratedOrder++;
+                rider.riderRatings = rider.totalRatings / rider.ratedOrder;
+                order.rated = true;
+                const totalOrders = rider.acceptedOrders.length + rider.completedOrders.length;
+                const saveRider = await this.riderRepository.save(rider);
+                return {
+                    status: true,
+                    message: 'Returned sum of orders accepted and completed and ratings',
+                    totalOrders: totalOrders,
+                    rating: saveRider.riderRatings
+                }
+
+            }
+            const totalOrders = rider.acceptedOrders.length + rider.completedOrders.length;
+            return {
+                status: true,
+                message: 'Returned sum of orders accepted and completed and ratings',
+                totalOrders: totalOrders,
+                rating: rider.riderRatings
+            }
+
+        } catch (error) {
+            console.log(error);
+            return {
+                status: false,
+                message: 'Error in fetching details'
+            }
+        }
     }
 }
 
