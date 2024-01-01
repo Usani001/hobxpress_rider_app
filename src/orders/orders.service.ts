@@ -205,6 +205,9 @@ export class OrdersService {
           data: saveOrder,
         }
       } else if (request.riderResponse === 'REJECT' && order.type === orderType.ACTIVE) {
+        const activeOrders = await this.getActiveOrders({ id: rider.id });
+        const orderIndex = activeOrders.findIndex(order => order.id === orders.id);
+        orderIndex !== -1 ? activeOrders.splice(orderIndex, 1) : null;
         return {
           status: true,
           message: 'Rider has rejected order',
