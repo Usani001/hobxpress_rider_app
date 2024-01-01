@@ -14,7 +14,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userConnection: Repository<User>,
     private authService: AuthService
-  ) { }
+  ) {}
 
   async createRef(createUserDto, ref) {
     try {
@@ -73,8 +73,8 @@ export class UsersService {
         user.first_name = createUserDto.first_name;
         user.last_name = createUserDto.last_name;
         user.password = createUserDto.password;
-        if(createUserDto.profile_pic){
-          user.profile_pic = createUserDto.profile_pic
+        if (createUserDto.profile_pic) {
+          user.profile_pic = createUserDto.profile_pic;
         }
         console.log(user);
 
@@ -183,10 +183,10 @@ export class UsersService {
       if (body.last_name) {
         getUser.last_name = body.last_name;
       }
-      // if (body.password) {
-      //   const password = await this.authService.encrypt(body.password);
-      //   getUser.password = password;
-      // }/
+      if (body.phone_number) {
+        getUser.phone_number = body.phone_number;
+      }
+
       if (body.email) {
         getUser.email = body.email;
       }

@@ -27,13 +27,14 @@ export class updateDto {
   email?: string;
   first_name?: string;
   last_name?: string;
+  phone_number?: string;
   password?: string;
   old_password?: string;
 }
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get()
   getOrder(@Req() req) {
