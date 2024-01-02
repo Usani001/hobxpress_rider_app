@@ -239,32 +239,41 @@ export class OrdersService {
   async completeAnOrder(orders: Order, req) {
     try {
       const riderToken = await this.authService.getLoggedInUser(req);
-      const rider = await this.riderRepository.findOneBy({ id: riderToken.id });
+      const rider = await this.riderRepository.findOneBy({ id: riderToken.data.id });
       const order = await this.orderRepository.findOneBy({ id: orders.id })
 
       if (order.type === orderType.INPROGRESS && rider) {
-        const orderIndex = rider.acceptedOrders.findIndex(o => o.id === orders.id);
-        order.type = orderType.COMPLETED
-        const accept = [order, ...rider.completedOrders];
-        orderIndex !== -1 ? rider.completedOrders = accept : null;
-        orderIndex !== -1 ? rider.acceptedOrders.splice(orderIndex, 1) : null;
-        const saveOrder = await this.orderRepository.save(order);
-        const notificationUser = { headerText: 'Item Delivered', body: 'Your item has been delivered successfully to ' + order.delivery_add, time: this.getFormattedDateTime() };
-        const notificationRider = {
-          headerText: 'Item Delivered', body: `You have delivered an item to ${order.delivery_add} successfully`, time: this.getFormattedDateTime()
-        };
-        const user = await this.userRepository.findOneBy({ id: order.user_id });
-        const userNotification = [notificationUser, ...user.notifications]
-        const riderNotification = [notificationRider, ...rider.notifications]
-        user.notifications = userNotification
-        rider.notifications = riderNotification;
 
-        const saveRider = await this.riderRepository.save(rider);
-        const saveUser = await this.userRepository.save(user);
+        const orderIndex = rider.acceptedOrders.findIndex(o => o.id === orders.id);
+        if (orderIndex !== -1) {
+          order.type = orderType.COMPLETED
+          const completedOrders = [order, ...rider.completedOrders];
+          rider.completedOrders = completedOrders;
+          rider.acceptedOrders.splice(orderIndex, 1);
+          const notificationUser = { headerText: 'Item Delivered', body: 'Your item has been delivered successfully to ' + order.delivery_add, time: this.getFormattedDateTime() };
+          const notificationRider = {
+            headerText: 'Item Delivered', body: `You have delivered an item to ${order.delivery_add} successfully`, time: this.getFormattedDateTime()
+          };
+          const user = await this.userRepository.findOneBy({ id: order.user_id });
+          const userNotification = [notificationUser, ...user.notifications]
+          const riderNotification = [notificationRider, ...rider.notifications]
+          user.notifications = userNotification
+          rider.notifications = riderNotification;
+          const [saveOrder, saveRider, saveUser] = await Promise.all([
+            this.orderRepository.save(order),
+            this.riderRepository.save(rider),
+            this.userRepository.save(user),
+          ]);
+          return {
+            status: true,
+            message: 'Rider has completed order delivery',
+            data: saveOrder,
+          }
+        }
+        console.log(orderIndex);
         return {
-          status: true,
-          message: 'Rider has completed order delivery',
-          data: saveOrder,
+          status: false,
+          message: 'Order or Rider not found',
         }
       }
       return {
