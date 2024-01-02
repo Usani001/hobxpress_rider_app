@@ -97,34 +97,41 @@ export class RiderService {
 
     async loginRider(request: riderLogin) {
         try {
-            const isRider = await this.riderRepository.findOne({
+            const data: Rider = await this.riderRepository.findOne({
                 where: { reg_code: request.reg_code }
             });
-            if (isRider) {
+            if (data) {
                 const {
                     reg_code,
                     riders_company,
+                    notifications,
+                    acceptedOrders,
+                    completedOrders,
+                    latitude,
+                    longitude,
+                    password,
+                    deletedAt,
                     ...Filterdata
-                } = isRider;
+                } = data;
                 var token = jwt.sign(
                     {
                         data: Filterdata,
                     },
-                    process.env.DEFAULT_SECRET,
-                    //{ expiresIn: '24h' }
+                    process.env.DEFAULT_SECRET
+                    // { expiresIn: '24h' }
                 );
                 const notification = {
                     headerText: 'Login Successful', body: 'You successfully logged into your account', time: this.orderService.getFormattedDateTime()
                 };
-                const riderNotification = [notification, ...isRider.notifications];
-                isRider.notifications = riderNotification;
-                await this.riderRepository.save(isRider);
+                const riderNotification = [notification, ...data.notifications];
+                data.notifications = riderNotification;
+                await this.riderRepository.save(data);
 
                 return {
                     status: true,
                     token: token,
-                    data: isRider,
-                    message: 'login successfully',
+                    data: Filterdata,
+                    message: 'login successful',
                 };
             } else {
                 return {
