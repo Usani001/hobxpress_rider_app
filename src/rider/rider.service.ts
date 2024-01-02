@@ -44,7 +44,6 @@ export class RiderService {
                 return {
                     status: true,
                     message: 'Rider Created successfully',
-                    data: newRider
                 };
             } else {
                 return {
@@ -90,7 +89,7 @@ export class RiderService {
                 message: 'Rider Profile returned',
                 totalOrders: totalOrders,
                 rating: rider.riderRatings,
-                rider: rider
+                rider: Filterdata
             }
 
 
@@ -257,7 +256,7 @@ export class RiderService {
                 return {
                     status: true,
                     message: 'Riders location has been updated successfully',
-                    data1: 'Latitude: ' + rider.latitude + '  ' + 'Longitude: ' + rider.longitude,
+                    data: 'Latitude: ' + rider.latitude + '  ' + 'Longitude: ' + rider.longitude,
                 }
             }
             return {
