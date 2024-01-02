@@ -75,6 +75,15 @@ export class RiderService {
 
                 }
             }
+            const {
+                reg_code,
+                notifications,
+                acceptedOrders,
+                completedOrders,
+                password,
+                deletedAt,
+                ...Filterdata
+            } = rider;
             const totalOrders = rider.acceptedOrders.length + rider.completedOrders.length;
             return {
                 status: true,

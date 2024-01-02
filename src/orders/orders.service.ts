@@ -151,22 +151,24 @@ export class OrdersService {
         where: { id: body.id },
       });
       const rider = await this.riderRepository.findOneBy({ id: getOrder.rider_id })
-      for (const order of rider.completedOrders) {
+      const orderIndex = rider.completedOrders.findIndex(o => o.id === body.id);
+      if (orderIndex !== -1) {
         if (body.rating) {
           getOrder.ratings = body.rating;
-          order.ratings = body.rating;
+          getOrder.ratings = body.rating;
         }
         if (body.comment) {
           getOrder.comments = body.comment;
-          order.comments = body.comment;
+          getOrder.comments = body.comment;
         }
+        rider.completedOrders[orderIndex] = getOrder;
+        await this.riderRepository.save(rider);
+        await this.orderRepository.save(getOrder);
+        return {
+          status: true,
+          message: 'Review Added',
+        };
       }
-      await this.riderRepository.save(rider);
-      await this.orderRepository.save(getOrder);
-      return {
-        status: true,
-        message: 'Review Added',
-      };
     } catch (error) {
       return {
         status: false,
