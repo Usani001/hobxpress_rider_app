@@ -1,5 +1,4 @@
 import { Order } from 'src/orders/entity/orders.entity';
-import { text } from 'stream/consumers';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { DeleteDateColumn } from 'typeorm';
@@ -8,13 +7,6 @@ import { v4 as uuidv4 } from 'uuid';
 const generatedUuid = uuidv4();
 const code = generatedUuid.slice(0, 5);
 
-export enum rateRider {
-  ONE = 1,
-  TWO = 2,
-  THREE = 3,
-  FOUR = 4,
-  FIVE = 5,
-}
 
 @Entity()
 export class Rider {

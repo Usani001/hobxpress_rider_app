@@ -65,13 +65,12 @@ export class RiderService {
         const rider = await this.riderRepository.findOneBy({ id: riderTok.data.id });
         try {
             for (const order of rider.completedOrders) {
-                if (order.type === orderType.COMPLETED && order.rated === false && order.ratings > 0) {
+                if (order.type === orderType.COMPLETED && order.rated === false && order.ratings !== 0) {
                     rider.totalRatings += order.ratings;
                     rider.ratedOrder++;
                     rider.riderRatings = rider.totalRatings / rider.ratedOrder;
                     order.rated = true;
                     const saveRider = await this.riderRepository.save(rider);
-
                 }
             }
             const {

@@ -155,10 +155,8 @@ export class OrdersService {
       if (orderIndex !== -1) {
         if (body.rating) {
           getOrder.ratings = body.rating;
-          getOrder.ratings = body.rating;
         }
         if (body.comment) {
-          getOrder.comments = body.comment;
           getOrder.comments = body.comment;
         }
         rider.completedOrders[orderIndex] = getOrder;
@@ -364,42 +362,31 @@ export class OrdersService {
 
     try {
       if (rider) {
-        const radius = 10000;
+        const radius = 5000;
         const orders = await this.orderRepository
           .createQueryBuilder('order')
           .select()
           .addSelect(`earth_distance(ll_to_earth(${rider.latitude},${rider.longitude}),ll_to_earth(order.pickupLatitude, order.pickupLongitude))`,
             'distance',)
-          .where(`earth_distance(ll_to_earth(${rider.latitude},${rider.longitude}),ll_to_earth(order.pickupLatitude, order.pickupLongitude))<=${radius} `
-          )
+          .where(`earth_distance(ll_to_earth(${rider.latitude},${rider.longitude}),ll_to_earth(order.pickupLatitude, order.pickupLongitude))<=${radius}`)
+          .andWhere('order.type = :orderType', { orderType: orderType.ACTIVE })
           .orderBy('distance', 'ASC')
           .limit(10)
           .getMany();
-
         const riderLocation = `${rider.longitude},${rider.latitude}`;
-
         for (const order of orders) {
-          if (order.type === orderType.ACTIVE) {
-            const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${riderLocation};${order.geo_pickup}?destinations=0,sources=0&annotations=distance&access_token=${this.apiKey}`;
-            const response = await axios.get(url);
-            const distanceInKm = response.data.distances[1][0] / 1000;
-            order.riderDistance = Math.ceil(distanceInKm).toFixed();
-            await this.orderRepository.save(order);
-          }
-        }
-        const activeOrders = orders.filter(order => order.type === orderType.ACTIVE);
-        if (activeOrders.length >= 0) {
-          return {
-            status: true,
-            message: 'Active Orders Fetched',
-            numberOfActiveOrders: activeOrders.length,
-            data: activeOrders,
-          };
+          const url = `https://api.mapbox.com/directions-matrix/v1/mapbox/driving/${riderLocation};${order.geo_pickup}?destinations=0,sources=0&annotations=distance&access_token=${this.apiKey}`;
+          const response = await axios.get(url);
+          const distanceInKm = response.data.distances[1][0] / 1000;
+          order.riderDistance = Math.ceil(distanceInKm).toFixed();
+          await this.orderRepository.save(order);
         }
         return {
-          status: false,
-          message: 'No active orders found'
-        };
+          status: true,
+          message: 'Active Orders Fetched',
+          numberOfActiveOrders: orders.length,
+          data: orders,
+        }
       }
       return {
         status: false,
