@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { sharedModules } from 'sharedModules';
 import { sharedEntities } from 'entitiesData';
+import { AdminModule } from './admin/admin.module';
+import { CompanyModule } from './company/company.module';
 
 
 
@@ -26,6 +28,8 @@ import { sharedEntities } from 'entitiesData';
       entities: [...sharedEntities],
       synchronize: true,
     }),
+    AdminModule,
+    CompanyModule,
 
   ],
   controllers: [AppController],

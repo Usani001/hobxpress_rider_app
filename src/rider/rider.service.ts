@@ -70,6 +70,7 @@ export class RiderService {
                     rider.ratedOrder++;
                     rider.riderRatings = rider.totalRatings / rider.ratedOrder;
                     order.rated = true;
+                    const saveOrder = await this.orderRepository.save(order);
                     const saveRider = await this.riderRepository.save(rider);
                 }
             }

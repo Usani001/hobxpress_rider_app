@@ -89,7 +89,7 @@ export class OrdersService {
       user.notifications = userNotification
       const saveUser = await this.userRepository.save(user)
       console.log(saveOrder)
-      console.log(response.data.destinations)
+      console.log(response.data.distances[1][0] / 1000)
       console.log('Distance: ' + distanceInKm, 'Amount: ' + amountCharged);
       return {
         status: true,
@@ -167,10 +167,14 @@ export class OrdersService {
           message: 'Review Added',
         };
       }
+      return {
+        status: false,
+        message: 'Order not Found',
+      };
     } catch (error) {
       return {
         status: false,
-        message: 'Order Found',
+        message: 'Order not Found',
         data: error,
       };
     }
@@ -371,7 +375,7 @@ export class OrdersService {
           .where(`earth_distance(ll_to_earth(${rider.latitude},${rider.longitude}),ll_to_earth(order.pickupLatitude, order.pickupLongitude))<=${radius}`)
           .andWhere('order.type = :orderType', { orderType: orderType.ACTIVE })
           .orderBy('distance', 'ASC')
-          .limit(10)
+          .limit(12)
           .getMany();
         const riderLocation = `${rider.longitude},${rider.latitude}`;
         for (const order of orders) {
