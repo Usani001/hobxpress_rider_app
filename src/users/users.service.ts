@@ -35,6 +35,10 @@ export class UsersService {
         user.first_name = createUserDto.first_name;
         user.last_name = createUserDto.last_name;
         user.password = createUserDto.password;
+        user.phone_number = createUserDto.phone_number;
+        if (createUserDto.profile_pic) {
+          user.profile_pic = createUserDto.profile_pic;
+        }
         console.log(user);
 
         let newData = await this.userConnection.save(user);
@@ -73,6 +77,7 @@ export class UsersService {
         user.first_name = createUserDto.first_name;
         user.last_name = createUserDto.last_name;
         user.password = createUserDto.password;
+        user.phone_number = createUserDto.phone_number;
         if (createUserDto.profile_pic) {
           user.profile_pic = createUserDto.profile_pic;
         }
