@@ -74,6 +74,7 @@ export class RiderController {
     notifications(@Req() req) {
         return this.riderService.notifications(req);
     }
+
 }
 
 

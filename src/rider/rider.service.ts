@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { riderLogin, updateRiderDto } from './rider.controller';
 import { OrdersService } from 'src/orders/orders.service';
+import { Order, orderType } from 'src/orders/entity/orders.entity';
 var jwt = require('jsonwebtoken');
 
 
@@ -17,6 +18,8 @@ export class RiderService {
         @InjectRepository(Rider)
         private readonly riderRepository: Repository<Rider>,
         private orderService: OrdersService,
+        @InjectRepository(Order)
+        private readonly orderRepository: Repository<Order>,
         private authService: AuthService,
 
 
@@ -41,7 +44,6 @@ export class RiderService {
                 return {
                     status: true,
                     message: 'Rider Created successfully',
-                    data: newRider
                 };
             } else {
                 return {
@@ -59,51 +61,84 @@ export class RiderService {
     }
 
     async findRider(req) {
+        const riderTok = await this.authService.getLoggedInUser(req);
+        const rider = await this.riderRepository.findOneBy({ id: riderTok.data.id });
         try {
-            const tokUser = await this.authService.getLoggedInUser(req);
-            const getRider = await this.riderRepository.findOne({
-                where: { id: tokUser.data.id },
-            });
-            if (!getRider || getRider.deletedAt) {
-                return { status: false, message: 'Rider not found' };
+            for (const order of rider.completedOrders) {
+                if (order.type === orderType.COMPLETED && order.rated === false && order.ratings !== 0) {
+                    rider.totalRatings += order.ratings;
+                    rider.ratedOrder++;
+                    rider.riderRatings = rider.totalRatings / rider.ratedOrder;
+                    order.rated = true;
+                    const saveRider = await this.riderRepository.save(rider);
+                }
             }
-            return { status: true, message: 'Rider found', data: getRider };
+            const {
+                reg_code,
+                notifications,
+                acceptedOrders,
+                completedOrders,
+                password,
+                deletedAt,
+                ...Filterdata
+            } = rider;
+            const totalOrders = rider.acceptedOrders.length + rider.completedOrders.length;
+            return {
+                status: true,
+                message: 'Rider Profile returned',
+                totalOrders: totalOrders,
+                rating: rider.riderRatings,
+                rider: Filterdata
+            }
+
+
         } catch (error) {
-            return { status: true, message: 'error', data: error };
+            console.log(error);
+            return {
+                status: false,
+                message: 'Error in fetching details'
+            }
         }
     }
 
 
     async loginRider(request: riderLogin) {
         try {
-            const isRider = await this.riderRepository.findOne({
+            const data: Rider = await this.riderRepository.findOne({
                 where: { reg_code: request.reg_code }
             });
-            if (isRider) {
+            if (data) {
                 const {
                     reg_code,
                     riders_company,
+                    notifications,
+                    acceptedOrders,
+                    completedOrders,
+                    latitude,
+                    longitude,
+                    password,
+                    deletedAt,
                     ...Filterdata
-                } = isRider;
+                } = data;
                 var token = jwt.sign(
                     {
                         data: Filterdata,
                     },
-                    process.env.DEFAULT_SECRET,
-                    //{ expiresIn: '24h' }
+                    process.env.DEFAULT_SECRET
+                    // { expiresIn: '24h' }
                 );
                 const notification = {
                     headerText: 'Login Successful', body: 'You successfully logged into your account', time: this.orderService.getFormattedDateTime()
                 };
-                const riderNotification = [notification, ...isRider.notifications];
-                isRider.notifications = riderNotification;
-                await this.riderRepository.save(isRider);
+                const riderNotification = [notification, ...data.notifications];
+                data.notifications = riderNotification;
+                await this.riderRepository.save(data);
 
                 return {
                     status: true,
                     token: token,
-                    data: isRider,
-                    message: 'login successfully',
+                    data: Filterdata,
+                    message: 'login successful',
                 };
             } else {
                 return {
@@ -220,7 +255,7 @@ export class RiderService {
                 return {
                     status: true,
                     message: 'Riders location has been updated successfully',
-                    data1: 'Latitude: ' + rider.latitude + '  ' + 'Longitude: ' + rider.longitude,
+                    data: 'Latitude: ' + rider.latitude + '  ' + 'Longitude: ' + rider.longitude,
                 }
             }
             return {
@@ -258,6 +293,7 @@ export class RiderService {
         }
 
     }
+
 }
 
 

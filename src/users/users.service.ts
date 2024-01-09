@@ -14,7 +14,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userConnection: Repository<User>,
     private authService: AuthService
-  ) {}
+  ) { }
 
   async createRef(createUserDto, ref) {
     try {
@@ -143,6 +143,8 @@ export class UsersService {
           ref_code,
           referrals,
           otp_token,
+          notifications,
+
           ...Filterdata
         } = data;
         var token = jwt.sign(
